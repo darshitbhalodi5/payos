@@ -2,9 +2,9 @@
 
 :root {
   --background: #2e2f33; /* requested background */
-  --foreground: #44d2ff; /* warm blue for text and accents */
-  --muted: #44d2ff; /* darker blue for secondary text */
-  --accent: #44d2ff; /* lighter blue for accents */
+  --foreground: #66d9ff; /* warm blue for text and accents */
+  --muted: #7bb3d9; /* lighter blue for secondary text */
+  --accent: #44d2ff; /* brighter cyan for accents and links */
 }
 
 @theme inline {
