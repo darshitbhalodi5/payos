@@ -3,6 +3,7 @@ import { Barlow, Barlow_Condensed } from "next/font/google";
 import "./globals.css";
 import PrivyProvider from "@/components/PrivyProvider";
 import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 
 const barlow = Barlow({
   variable: "--font-barlow",
@@ -29,11 +30,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${barlow.variable} ${barlowCondensed.variable} antialiased`}
+        className={`${barlow.variable} ${barlowCondensed.variable} antialiased min-h-screen flex flex-col`}
       >
         <PrivyProvider>
           <Navbar />
-          {children}
+          <main className="flex-1">
+            {children}
+          </main>
+          <Footer />
         </PrivyProvider>
       </body>
     </html>

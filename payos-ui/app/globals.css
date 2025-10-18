@@ -1,10 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --background: #2e2f33; /* requested background */
-  --foreground: #66d9ff; /* warm blue for text and accents */
-  --muted: #7bb3d9; /* lighter blue for secondary text */
-  --accent: #44d2ff; /* brighter cyan for accents and links */
+  --background: #2e2f33;
+  /* requested background */
+  --foreground: #66d9ff;
+  /* warm blue for text and accents */
+  --muted: #7bb3d9;
+  /* lighter blue for secondary text */
+  --accent: #44d2ff;
+  /* brighter cyan for accents and links */
 }
 
 @theme inline {
@@ -68,10 +72,6 @@ a {
   text-decoration: none;
 }
 
-a:hover {
-  text-decoration: underline;
-}
-
 /* Container: laptop-first, centered, with max width and side gutters on large screens */
 .container {
   width: 100%;
@@ -79,12 +79,14 @@ a:hover {
   margin-right: auto;
   padding-left: 16px;
   padding-right: 16px;
-  max-width: 1200px; /* laptop-friendly width */
+  max-width: 1200px;
+  /* laptop-friendly width */
 }
 
 @media (min-width: 1536px) {
   .container {
-    max-width: 1200px; /* keep laptop width */
+    max-width: 1200px;
+    /* keep laptop width */
   }
 }
 
