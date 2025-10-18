@@ -5,10 +5,12 @@ import { useState } from "react";
 import Image from "next/image";
 import { Wallet, MenuIcon } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
   const { ready, authenticated, user, login, logout } = usePrivy();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   // handle wallet connect using privy
   const handleWalletConnect = () => {
@@ -24,19 +26,26 @@ export default function Navbar() {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
+  // check if a navigation link is active
+  const isActive = (path: string) => {
+    return pathname === path;
+  };
+
   return (
-    <nav className="bg-background border-b border-foreground/20 sticky top-0 z-50">
+    <nav className="bg-background border-b border-foreground sticky top-0 z-50">
       <div className="container">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center space-x-3">
-            <Image
-              src="/payos.svg"
-              alt="Payos Logo"
-              width={100}
-              height={100}
-              className="object-contain"
-            />
+            <Link href="/">
+              <Image
+                src="/payos.svg"
+                alt="Payos Logo"
+                width={100}
+                height={100}
+                className="object-contain"
+              />
+            </Link>
           </div>
 
           {/* Desktop Menu */}
@@ -44,13 +53,19 @@ export default function Navbar() {
             <div className="ml-10 flex items-baseline space-x-4">
               <Link
                 href="/payroll"
-                className="flex items-center gap-2 px-4 py-1 rounded-xl font-semibold text-foreground hover:text-accent shadow-sm hover:bg-foreground/10 transition-colors duration-150 text-sm md:text-base md:px-6 focus:outline-none focus:ring-2 focus:ring-accent/50 border border-transparent hover:border-accent/20 "
+                className={`flex items-center gap-2 px-4 py-1 rounded-xl font-semibold shadow-sm transition-colors duration-150 text-sm md:text-base md:px-6 focus:outline-none focus:ring-2 focus:ring-accent/50 border ${isActive("/payroll")
+                    ? "bg-accent text-background border-accent"
+                    : "text-foreground hover:text-accent hover:bg-foreground/10 border-transparent hover:border-accent/20"
+                  }`}
               >
                 Payroll
               </Link>
               <Link
                 href="/split"
-                className="flex items-center gap-2 px-4 py-1 rounded-xl font-semibold text-foreground hover:text-accent shadow-sm hover:bg-foreground/10 transition-colors duration-150 text-sm md:text-base md:px-6 focus:outline-none focus:ring-2 focus:ring-accent/50 border border-transparent hover:border-accent/20"
+                className={`flex items-center gap-2 px-4 py-1 rounded-xl font-semibold shadow-sm transition-colors duration-150 text-sm md:text-base md:px-6 focus:outline-none focus:ring-2 focus:ring-accent/50 border ${isActive("/split")
+                    ? "bg-accent text-background border-accent"
+                    : "text-foreground hover:text-accent hover:bg-foreground/10 border-transparent hover:border-accent/20"
+                  }`}
               >
                 Split
               </Link>
@@ -101,13 +116,19 @@ export default function Navbar() {
             <div className="px-2 pt-2 pb-3 space-y-2 sm:px-3 border-t border-foreground/20">
               <Link
                 href="/payroll"
-                className="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-foreground hover:text-accent shadow-sm hover:bg-foreground/10 transition-colors duration-150 text-base focus:outline-none focus:ring-2 focus:ring-accent/50 border border-transparent hover:border-accent/20"
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold shadow-sm transition-colors duration-150 text-base focus:outline-none focus:ring-2 focus:ring-accent/50 border ${isActive("/payroll")
+                    ? "bg-accent text-background border-accent"
+                    : "text-foreground hover:text-accent hover:bg-foreground/10 border-transparent hover:border-accent/20"
+                  }`}
               >
                 Payroll
               </Link>
               <Link
                 href="/split"
-                className="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-foreground hover:text-accent shadow-sm hover:bg-foreground/10 transition-colors duration-150 text-base focus:outline-none focus:ring-2 focus:ring-accent/50 border border-transparent hover:border-accent/20"
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold shadow-sm transition-colors duration-150 text-base focus:outline-none focus:ring-2 focus:ring-accent/50 border ${isActive("/split")
+                    ? "bg-accent text-background border-accent"
+                    : "text-foreground hover:text-accent hover:bg-foreground/10 border-transparent hover:border-accent/20"
+                  }`}
               >
                 Split
               </Link>
