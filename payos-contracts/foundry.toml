@@ -2,5 +2,29 @@
 src = "src"
 out = "out"
 libs = ["lib"]
+solc = "0.8.20"
+optimizer = true
+optimizer_runs = 200
+via_ir = true
+gas_reports = ["*"]
+gas_reports_ignore = ["MockERC20"]
 
-# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
+[profile.ci]
+fuzz = { runs = 10000 }
+invariant = { runs = 1000, depth = 15 }
+
+[rpc_endpoints]
+# Testnet endpoints
+op-sepolia = "${OP_SEPOLIA_RPC_URL}"
+base-sepolia = "${BASE_SEPOLIA_RPC_URL}"
+polygon-sepolia = "${POLYGON_SEPOLIA_RPC_URL}"
+arb-sepolia = "${ARB_SEPOLIA_RPC_URL}"
+eth-sepolia = "${ETH_SEPOLIA_RPC_URL}"
+
+[etherscan]
+# Testnet verification keys
+op-sepolia = { key = "${ETHERSCAN_API_KEY}" }
+base-sepolia = { key = "${ETHERSCAN_API_KEY}" }
+polygon-sepolia = { key = "${ETHERSCAN_API_KEY}" }
+arb-sepolia = { key = "${ETHERSCAN_API_KEY}" }
+eth-sepolia = { key = "${ETHERSCAN_API_KEY}" }
