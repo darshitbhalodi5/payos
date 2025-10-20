@@ -4,6 +4,7 @@ out/
 
 # Ignores development broadcast logs
 broadcast
+lib
 
 # Docs
 docs/
