@@ -20,6 +20,7 @@ export const SUPPORTED_CHAINS: ChainInfo[] = [
         id: 11155111,
         name: 'Ethereum Sepolia',
         symbol: 'ETH',
+        logo: 'eth.svg',
         rpcUrl: ETH_SEPOLIA_RPC,
         blockExplorer: 'https://sepolia.etherscan.io',
         nativeCurrency: {
@@ -32,6 +33,7 @@ export const SUPPORTED_CHAINS: ChainInfo[] = [
         id: 421614,
         name: 'Arbitrum Sepolia',
         symbol: 'ARB',
+        logo: 'arb.svg',
         rpcUrl: ARB_SEPOLIA_RPC,
         blockExplorer: 'https://sepolia.arbiscan.io',
         nativeCurrency: {
@@ -44,6 +46,7 @@ export const SUPPORTED_CHAINS: ChainInfo[] = [
         id: 11155420,
         name: 'Optimism Sepolia',
         symbol: 'OP',
+        logo: 'op.svg',
         rpcUrl: OP_SEPOLIA_RPC,
         blockExplorer: 'https://sepolia-optimism.etherscan.io',
         nativeCurrency: {
@@ -56,6 +59,7 @@ export const SUPPORTED_CHAINS: ChainInfo[] = [
         id: 84532,
         name: 'Base Sepolia',
         symbol: 'BASE',
+        logo: 'base.svg',
         rpcUrl: BASE_SEPOLIA_RPC,
         blockExplorer: 'https://sepolia.basescan.org',
         nativeCurrency: {
@@ -68,6 +72,7 @@ export const SUPPORTED_CHAINS: ChainInfo[] = [
         id: 80002,
         name: 'Polygon Amoy',
         symbol: 'POL',
+        logo: 'matic.svg',
         rpcUrl: POLYGON_AMOY_RPC,
         blockExplorer: 'https://amoy.polygonscan.com',
         nativeCurrency: {
