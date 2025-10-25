@@ -1,4 +1,4 @@
-import { ETH_SEPOLIA_RPC, ARB_SEPOLIA_RPC, OP_SEPOLIA_RPC, BASE_SEPOLIA_RPC, POLYGON_AMOY_RPC } from '@/lib/environment-config';
+import { ETH_SEPOLIA_RPC, ARB_SEPOLIA_RPC, OP_SEPOLIA_RPC, BASE_SEPOLIA_RPC } from '@/lib/environment-config';
 
 export interface ChainInfo {
     id: number;
@@ -65,19 +65,6 @@ export const SUPPORTED_CHAINS: ChainInfo[] = [
         nativeCurrency: {
             name: 'Ether',
             symbol: 'ETH',
-            decimals: 18,
-        },
-    },
-    {
-        id: 80002,
-        name: 'Polygon Amoy',
-        symbol: 'POL',
-        logo: 'matic.svg',
-        rpcUrl: POLYGON_AMOY_RPC,
-        blockExplorer: 'https://amoy.polygonscan.com',
-        nativeCurrency: {
-            name: 'Polygon',
-            symbol: 'POL',
             decimals: 18,
         },
     },

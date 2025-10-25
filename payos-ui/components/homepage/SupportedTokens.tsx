@@ -25,13 +25,6 @@ const SUPPORTED_TOKENS = [
         logo: 'usdc.svg',
         description: 'Stablecoin by Circle'
     },
-    {
-        id: 'usdt',
-        name: 'Tether USD',
-        symbol: 'USDT',
-        logo: 'usdt.svg',
-        description: 'Stablecoin by Tether'
-    }
 ];
 
 export default function SupportedTokens() {

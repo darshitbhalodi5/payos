@@ -4,15 +4,14 @@ import { PrivyProvider as PrivyProviderBase } from '@privy-io/react-auth';
 import { WagmiProvider } from '@privy-io/wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { http } from 'viem';
-import { sepolia, polygonAmoy, arbitrumSepolia, optimismSepolia, baseSepolia } from 'viem/chains';
+import { sepolia, arbitrumSepolia, optimismSepolia, baseSepolia } from 'viem/chains';
 import { createConfig } from 'wagmi';
 
 // Configure wagmi
 const config = createConfig({
-  chains: [sepolia, polygonAmoy, arbitrumSepolia, optimismSepolia, baseSepolia],
+  chains: [sepolia, arbitrumSepolia, optimismSepolia, baseSepolia],
   transports: {
     [sepolia.id]: http(),
-    [polygonAmoy.id]: http(),
     [arbitrumSepolia.id]: http(),
     [optimismSepolia.id]: http(),
     [baseSepolia.id]: http(),

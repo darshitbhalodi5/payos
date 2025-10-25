@@ -135,7 +135,7 @@ export function isValidChainId(chainId: number): boolean {
  * Validate token symbol
  */
 export function isValidTokenSymbol(symbol: string): boolean {
-  const supportedTokens = ['ETH', 'USDC', 'USDT', 'PYUSD'];
+  const supportedTokens = ['ETH', 'USDC', 'PYUSD'];
   return supportedTokens.includes(symbol.toUpperCase());
 }
 

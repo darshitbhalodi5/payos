@@ -10,7 +10,6 @@ interface SplitListProps {
 
 const SUPPORTED_CHAINS = [
   { id: 11155111, name: 'Ethereum Sepolia', symbol: 'ETH' },
-  { id: 80002, name: 'Polygon Amoy', symbol: 'POL' },
   { id: 421614, name: 'Arbitrum Sepolia', symbol: 'ARB' },
   { id: 11155420, name: 'Optimism Sepolia', symbol: 'OP' },
   { id: 84532, name: 'Base Sepolia', symbol: 'BASE' },
@@ -19,7 +18,6 @@ const SUPPORTED_CHAINS = [
 const SUPPORTED_TOKENS = [
   { symbol: 'PYUSD', name: 'PayPal USD', decimals: 6 },
   { symbol: 'USDC', name: 'USD Coin', decimals: 6 },
-  { symbol: 'USDT', name: 'Tether USD', decimals: 6 },
 ];
 
 export default function SplitList({ onSplitSelect, onCreateSplit }: SplitListProps) {

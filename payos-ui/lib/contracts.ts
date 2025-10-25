@@ -8,7 +8,6 @@ export const SPLIT_BILL_ADDRESSES: ContractAddresses = {
   421614: '0x3bdeD6E96eeeB7858701A0291dBA9A84c8b9D801', // Arbitrum Sepolia
   11155420: '0x3bdeD6E96eeeB7858701A0291dBA9A84c8b9D801', // Optimism Sepolia
   84532: '0x3bdeD6E96eeeB7858701A0291dBA9A84c8b9D801', // Base Sepolia
-  80002: '0x3bdeD6E96eeeB7858701A0291dBA9A84c8b9D801', // Polygon Amoy
 };
 
 // Export the comprehensive ABI
@@ -41,8 +40,7 @@ export function getChainName(chainId: number): string {
     11155111: 'Ethereum Sepolia',
     421614: 'Arbitrum Sepolia',
     11155420: 'Optimism Sepolia',
-    84532: 'Base Sepolia',
-    80002: 'Polygon Amoy'
+    84532: 'Base Sepolia'
   };
   return chainNames[chainId] || 'Unknown';
 }
@@ -53,8 +51,7 @@ export function getBlockExplorer(chainId: number): string {
     11155111: 'https://sepolia.etherscan.io',
     421614: 'https://sepolia.arbiscan.io',
     11155420: 'https://sepolia-optimism.etherscan.io',
-    84532: 'https://sepolia.basescan.org',
-    80002: 'https://amoy.polygonscan.com'
+    84532: 'https://sepolia.basescan.org'
   };
   return explorers[chainId] || '';
 }

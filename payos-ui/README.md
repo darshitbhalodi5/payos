@@ -9,7 +9,7 @@ A modern, responsive web application for cross-chain payroll management built wi
 - **Employee Management**: Add, edit, and manage employees across multiple chains
 - **Payment Processing**: Cross-chain payments using Avail Nexus SDK
 - **Real-time Updates**: Live payment status and transaction tracking
-- **Multi-chain Support**: Ethereum, Polygon, Arbitrum, Optimism, Base
+- **Multi-chain Support**: Ethereum, Arbitrum, Optimism, Base
 
 ### Technical Features
 - **Next.js 15**: Latest App Router with React 19
@@ -128,23 +128,21 @@ payos-ui/
 
 ### Payment Processing
 - Select employees for batch payments
-- Choose payment tokens (ETH, USDC, USDT, etc.)
+- Choose payment tokens (ETH, USDC, PYUSD)
 - Process cross-chain payments via Avail Nexus SDK
 - Track payment status and transaction hashes
 
 ## 🌐 Supported Chains
 
-- **Ethereum** (Chain ID: 1)
-- **Polygon** (Chain ID: 137)
-- **Arbitrum** (Chain ID: 42161)
-- **Optimism** (Chain ID: 10)
-- **Base** (Chain ID: 8453)
+- **Ethereum Sepolia** (Chain ID: 11155111)
+- **Arbitrum Sepolia** (Chain ID: 421614)
+- **Optimism Sepolia** (Chain ID: 11155420)
+- **Base Sepolia** (Chain ID: 84532)
 
 ## 💳 Supported Tokens
 
 - **ETH**: Ethereum native token
 - **USDC**: USD Coin (Circle)
-- **USDT**: Tether USD
 - **PYUSD**: PayPal USD (Primary settlement currency)
 
 ## 🔒 Security Features

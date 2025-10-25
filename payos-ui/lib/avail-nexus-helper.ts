@@ -66,7 +66,7 @@ export class AvailNexusHelper {
   async contributeToSplit(params: {
     splitId: string;
     contributor: string;
-    sourceToken: string; // ETH, USDC, USDT
+    sourceToken: string; // ETH, USDC
     sourceAmount: string; // Amount in source token (wei/smallest unit)
     sourceChainId: number; // Chain user is paying from
     targetChainId: number; // Chain recipient wants payment on
@@ -182,8 +182,8 @@ export class AvailNexusHelper {
       // Fallback: Simple estimation
       // For stablecoins, assume 1:1
       if (
-        ['USDC', 'USDT', 'PYUSD'].includes(fromToken) &&
-        ['USDC', 'USDT', 'PYUSD'].includes(toToken)
+        ['USDC', 'PYUSD'].includes(fromToken) &&
+        ['USDC', 'PYUSD'].includes(toToken)
       ) {
         return fromAmount;
       }
@@ -208,7 +208,7 @@ export class AvailNexusHelper {
       // Use SDK's unified balance functionality
       return await this.sdk!.getUnifiedBalance({
         address: userAddress,
-        tokens: ['ETH', 'USDC', 'USDT', 'PYUSD'],
+        tokens: ['ETH', 'USDC', 'PYUSD'],
       });
     } catch (error) {
       console.error('Failed to get unified balance:', error);
@@ -296,8 +296,8 @@ export class AvailNexusHelper {
 export const DEFAULT_AVAIL_CONFIG: AvailNexusConfig = {
   apiKey: process.env.NEXT_PUBLIC_AVAIL_NEXUS_API_KEY || '',
   environment: 'testnet',
-  supportedChains: [11155111, 80002, 421614, 11155420, 84532], // Ethereum Sepolia, Polygon Amoy, Arbitrum Sepolia, Optimism Sepolia, Base Sepolia
-  supportedTokens: ['ETH', 'USDC', 'USDT', 'PYUSD']
+  supportedChains: [11155111, 421614, 11155420, 84532], // Ethereum Sepolia, Arbitrum Sepolia, Optimism Sepolia, Base Sepolia
+  supportedTokens: ['ETH', 'USDC', 'PYUSD']
 };
 
 // Create and export a singleton instance

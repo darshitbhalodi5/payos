@@ -40,16 +40,14 @@ This directory contains the frontend components for the PayOS split functionalit
 
 ### Supported Chains
 - Ethereum Sepolia (11155111)
-- Polygon Amoy (80002)
 - Arbitrum Sepolia (421614)
 - Optimism Sepolia (11155420)
 - Base Sepolia (84532)
 
 ### Supported Tokens
+- ETH (Ethereum)
 - PYUSD (PayPal USD)
 - USDC (USD Coin)
-- USDT (Tether USD)
-- ETH (Ethereum)
 
 ## Integration with Avail Nexus SDK
 

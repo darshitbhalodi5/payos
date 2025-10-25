@@ -17,7 +17,6 @@ export const SUPPORTED_TOKENS: TokenInfo[] = [
       421614: '0x0000000000000000000000000000000000000000', // Native ETH on Arbitrum
       11155420: '0x0000000000000000000000000000000000000000', // Native ETH on Optimism
       84532: '0x0000000000000000000000000000000000000000', // Native ETH on Base
-      80002: '0x52eF3d68BaB452a294342DC3e5f464d7f610f72E', // Wrapped ETH on Polygon
     },
   },
   {
@@ -29,7 +28,6 @@ export const SUPPORTED_TOKENS: TokenInfo[] = [
       421614: '0x6c3ea9036406852006290770BEdFcAbA0e23A0e8', // Arbitrum
       11155420: '0x6c3ea9036406852006290770BEdFcAbA0e23A0e8', // Optimism
       84532: '0x6c3ea9036406852006290770BEdFcAbA0e23A0e8', // Base
-      80002: '0x6c3ea9036406852006290770BEdFcAbA0e23A0e8', // Polygon
     },
   },
   {
@@ -41,30 +39,16 @@ export const SUPPORTED_TOKENS: TokenInfo[] = [
       421614: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', // Arbitrum
       11155420: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85', // Optimism
       84532: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // Base
-      80002: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174', // Polygon
-    },
-  },
-  {
-    symbol: 'USDT',
-    name: 'Tether USD',
-    decimals: 6,
-    address: {
-      11155111: '0xdAC17F958D2ee523a2206206994597C13D831ec7', // Ethereum
-      421614: '0x30fa2fbe15c1eadfbef28c188b7b8dbd3c1ff2eb',
-      11155420: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58', // Optimism
-      84532: '0x323e78f944A9a1FcF3a10efcC5319DBb0bB6e673',
-      80002: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F', // Polygon
     },
   },
 ];
 
 // Token availability by chain
 export const TOKEN_AVAILABILITY: Record<number, string[]> = {
-  11155111: ['ETH', 'PYUSD', 'USDC', 'USDT'],
-  421614: ['ETH', 'PYUSD', 'USDC', 'USDT'],
-  11155420: ['ETH', 'USDC', 'USDT'],
-  84532: ['ETH', 'USDC', 'USDT'],
-  80002: ['ETH', 'USDC', 'USDT'],
+  11155111: ['ETH', 'PYUSD', 'USDC'],
+  421614: ['ETH', 'PYUSD', 'USDC'],
+  11155420: ['ETH', 'USDC'],
+  84532: ['ETH', 'USDC'],
 };
 
 // Helper functions

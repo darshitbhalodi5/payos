@@ -133,12 +133,6 @@ class AvailNexusSDK {
           address: '0xA0b86a33e6441C8C06dDD4341B4c24CB16f56E38',
           decimals: 6,
           chainId
-        },
-        {
-          symbol: 'USDT',
-          address: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
-          decimals: 6,
-          chainId
         }
       ];
 
@@ -211,7 +205,7 @@ export function createAvailNexusSDK(config: NexusConfig): AvailNexusSDK {
 export const DEFAULT_NEXUS_CONFIG: NexusConfig = {
   apiKey: process.env.NEXT_PUBLIC_AVAIL_NEXUS_API_KEY || '',
   environment: 'testnet',
-  supportedChains: [11155111, 421614, 11155420, 84532, 80002] // Ethereum Sepolia, Arbitrum Sepolia, Optimism Sepolia, Base Sepolia, Polygon Amoy
+  supportedChains: [11155111, 421614, 11155420, 84532] // Ethereum Sepolia, Arbitrum Sepolia, Optimism Sepolia, Base Sepolia
 };
 
 // Export types

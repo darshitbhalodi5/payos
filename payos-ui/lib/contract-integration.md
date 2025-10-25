@@ -46,7 +46,6 @@ export const SPLIT_BILL_ADDRESSES: ContractAddresses = {
   421614: '0xYourArbitrumSepoliaAddress', // Arbitrum Sepolia
   11155420: '0xYourOptimismSepoliaAddress', // Optimism Sepolia
   84532: '0xYourBaseSepoliaAddress', // Base Sepolia
-  80002: '0xYourPolygonAmoyAddress', // Polygon Amoy
 };
 ```
 
@@ -106,7 +105,7 @@ const { data: splitCreatedEvents } = useWatchContractEvent({
 3. Test all functionality
 
 ### Testnet Testing
-1. Deploy to testnets (Sepolia, Amoy, etc.)
+1. Deploy to testnets (Sepolia, etc.)
 2. Test cross-chain functionality
 3. Verify all features work
 
