@@ -1,107 +1,91 @@
-import Image from "next/image";
+'use client';
+
+import { usePrivy } from '@privy-io/react-auth';
 
 export default function Home() {
-  return (
-    <div className="font-sans min-h-screen">
-      <div className="container py-10 sm:py-16">
-        <header className="mb-8 sm:mb-12">
-          <h1>Welcome to PayOS</h1>
-          <p className="text-body mt-2 max-w-prose text-balance">Laptop-first responsive layout with consistent typography using Barlow.</p>
-        </header>
-        <main className="flex flex-col gap-8">
-        <Image
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 prose">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.15] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const { authenticated, ready } = usePrivy();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#e6c23f] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] transition-colors flex items-center justify-center hover:bg-[#3b3c40] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  return (
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--background)' }}>
+      <div className="max-w-4xl w-full mx-4">
+        {/* Hero Section */}
+        <div className="text-center mb-16">
+          <div className="w-24 h-24 rounded-full mx-auto mb-8 flex items-center justify-center" style={{ background: 'linear-gradient(to right, var(--accent), #8b5cf6)' }}>
+            <span className="text-4xl font-bold text-white">P</span>
+          </div>
+          <h1 className="text-6xl font-bold mb-6" style={{ color: 'var(--foreground)' }}>
+            PayOS
+          </h1>
+          <p className="text-2xl mb-8" style={{ color: 'var(--muted)' }}>
+            Cross-chain payroll made simple
+          </p>
+          <p className="text-lg max-w-2xl mx-auto mb-12" style={{ color: 'var(--muted)' }}>
+            Pay employees on any chain with ease. Leverage Avail Nexus SDK for seamless cross-chain payments,
+            automatic token conversion to PYUSD, and instant settlement across multiple blockchain networks.
+          </p>
         </div>
-        </main>
+
+        {/* Features Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+          <div className="text-center p-6 rounded-lg border" style={{ backgroundColor: 'var(--background)', borderColor: 'var(--accent)' }}>
+            <div className="text-4xl mb-4">🌐</div>
+            <h3 className="text-xl font-semibold mb-3" style={{ color: 'var(--foreground)' }}>Multi-Chain Support</h3>
+            <p style={{ color: 'var(--muted)' }}>
+              Support for Ethereum, Polygon, Arbitrum, Optimism, and Base networks
+            </p>
+          </div>
+          <div className="text-center p-6 rounded-lg border" style={{ backgroundColor: 'var(--background)', borderColor: 'var(--accent)' }}>
+            <div className="text-4xl mb-4">🚀</div>
+            <h3 className="text-xl font-semibold mb-3" style={{ color: 'var(--foreground)' }}>Avail Nexus SDK</h3>
+            <p style={{ color: 'var(--muted)' }}>
+              Seamless cross-chain bridging and automatic token conversion
+            </p>
+          </div>
+          <div className="text-center p-6 rounded-lg border" style={{ backgroundColor: 'var(--background)', borderColor: 'var(--accent)' }}>
+            <div className="text-4xl mb-4">💰</div>
+            <h3 className="text-xl font-semibold mb-3" style={{ color: 'var(--foreground)' }}>PYUSD Settlement</h3>
+            <p style={{ color: 'var(--muted)' }}>
+              Automatic conversion to PYUSD for stable, reliable payments
+            </p>
+          </div>
+        </div>
+
+        {/* ETHGlobal Prize Targets */}
+        <div className="text-center mb-16">
+          <h2 className="text-3xl font-bold mb-8" style={{ color: 'var(--foreground)' }}>🎯 ETHGlobal Prize Targets</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="p-6 rounded-lg border" style={{ backgroundColor: 'rgba(68, 210, 255, 0.1)', borderColor: 'var(--accent)' }}>
+              <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--accent)' }}>Avail Nexus SDK</h3>
+              <p className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>$10,000</p>
+            </div>
+            <div className="p-6 rounded-lg border" style={{ backgroundColor: 'rgba(68, 210, 255, 0.1)', borderColor: 'var(--accent)' }}>
+              <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--accent)' }}>PYUSD Integration</h3>
+              <p className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>$10,000</p>
+            </div>
+            <div className="p-6 rounded-lg border" style={{ backgroundColor: 'rgba(68, 210, 255, 0.1)', borderColor: 'var(--accent)' }}>
+              <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--accent)' }}>Pyth Network</h3>
+              <p className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>$5,000</p>
+            </div>
+            <div className="p-6 rounded-lg border" style={{ backgroundColor: 'rgba(68, 210, 255, 0.1)', borderColor: 'var(--accent)' }}>
+              <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--accent)' }}>Yellow Network</h3>
+              <p className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>$5,000</p>
+            </div>
+          </div>
+        </div>
+
+        {/* CTA Section */}
+        <div className="text-center">
+          <h2 className="text-3xl font-bold mb-6" style={{ color: 'var(--foreground)' }}>
+            Ready to get started?
+          </h2>
+          <p className="text-lg mb-8" style={{ color: 'var(--muted)' }}>
+            Connect your wallet and start managing cross-chain payroll today
+          </p>
+          <div className="text-sm" style={{ color: 'var(--muted)' }}>
+            {!ready ? 'Loading...' : !authenticated ? 'Please connect your wallet to access the payroll dashboard' : 'Redirecting to payroll dashboard...'}
+          </div>
+        </div>
       </div>
-      <footer className="flex gap-[24px] flex-wrap items-center justify-center py-8">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
