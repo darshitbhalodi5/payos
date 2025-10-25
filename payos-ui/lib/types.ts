@@ -70,26 +70,24 @@ export interface AvailNexusConfig {
   apiKey: string;
   environment: 'testnet' | 'mainnet';
   supportedChains: number[];
+  supportedTokens: string[];
 }
 
 export interface BridgeAndExecuteParams {
-  token: string;
-  amount: string;
+  splitId: string;
+  contributor: string;
+  sourceToken: string;
+  sourceAmount: string;
   sourceChainId: number;
+  targetToken: string;
+  targetAmount: string;
   targetChainId: number;
-  recipient: string;
-  execute: {
-    contractAddress: string;
-    functionName: string;
-    functionParams: unknown[];
-  };
-  tokenApproval?: {
-    token: string;
-    amount: string;
-  };
+  contractAddress: string;
+  contractAbi: unknown[];
 }
 
 export interface BridgeResult {
+  success: boolean;
   transactionHash: string;
   status: 'pending' | 'completed' | 'failed';
   estimatedTime: number;

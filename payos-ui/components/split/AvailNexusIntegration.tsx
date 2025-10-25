@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
+import { useAvailNexus } from '@/hooks/useAvailNexus';
 
 interface AvailNexusIntegrationProps {
   splitId: string;
@@ -16,26 +17,7 @@ interface AvailNexusIntegrationProps {
   onError: (error: string) => void;
 }
 
-// Mock Avail Nexus SDK - in production, this would be the actual SDK
-class MockNexusSDK {
-  async initialize(_provider: unknown) {
-    console.log('Mock Avail Nexus SDK initialized');
-    return true;
-  }
-
-  async bridgeAndExecute(params: unknown) {
-    console.log('Mock bridgeAndExecute called with:', params);
-    
-    // Simulate processing time
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    // Simulate success
-    return {
-      transactionHash: `0x${Math.random().toString(16).substr(2, 64)}`,
-      success: true
-    };
-  }
-}
+// This component now uses the real AvailNexus hook instead of mock data
 
 export default function AvailNexusIntegration({
   splitId,
@@ -50,6 +32,7 @@ export default function AvailNexusIntegration({
   onError,
 }: AvailNexusIntegrationProps) {
   const { user } = usePrivy();
+  const { bridgeAndExecute, isInitialized } = useAvailNexus();
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState('');
@@ -98,51 +81,29 @@ export default function AvailNexusIntegration({
       return;
     }
 
+    if (!isInitialized) {
+      onError('Avail Nexus SDK not initialized');
+      return;
+    }
+
     setIsProcessing(true);
     setProgress(0);
     setCurrentStep(steps[0]);
 
     try {
-      // Initialize mock SDK
-      const sdk = new MockNexusSDK();
-      await sdk.initialize(window.ethereum);
-
-      // Prepare bridge and execute parameters
-      const bridgeParams = {
-        token: sourceToken,
-        amount: sourceAmount,
-        sourceChains: [sourceChainId],
-        
-        toChainId: targetChainId,
-        recipient: process.env.NEXT_PUBLIC_SPLIT_CONTRACT_ADDRESS || '0xSplitContract',
-        
-        execute: {
-          contractAddress: process.env.NEXT_PUBLIC_SPLIT_CONTRACT_ADDRESS || '0xSplitContract',
-          functionName: 'contributeToBill',
-          buildFunctionParams: () => ({
-            functionParams: [
-              splitId,
-              contributorAddress,
-              sourceChainId,
-              sourceToken,
-              sourceAmount,
-              targetAmount
-            ]
-          }),
-          tokenApproval: {
-            token: targetToken,
-            amount: targetAmount
-          }
-        }
-      };
-
-      // In production, this would be the actual Avail Nexus SDK call:
-      /*
-      const result = await sdk.bridgeAndExecute(bridgeParams);
-      */
-
-      // For now, use mock implementation
-      const result = await sdk.bridgeAndExecute(bridgeParams);
+      // Use real Avail Nexus SDK
+      const result = await bridgeAndExecute({
+        splitId,
+        contributor: contributorAddress,
+        sourceToken,
+        sourceAmount,
+        sourceChainId,
+        targetToken,
+        targetAmount,
+        targetChainId,
+        contractAddress: process.env.NEXT_PUBLIC_SPLIT_CONTRACT_ADDRESS || '0xSplitContract',
+        contractAbi: [], // Will be provided by the hook
+      });
 
       if (result.success) {
         onSuccess(result.transactionHash);

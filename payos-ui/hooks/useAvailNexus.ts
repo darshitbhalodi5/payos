@@ -57,14 +57,14 @@ export function useAvailNexus(): UseAvailNexusReturn {
     try {
       setError(null);
       return await availNexusHelper.contributeToSplit({
-        splitId: '0x0000000000000000000000000000000000000000000000000000000000000000', // Mock split ID
-        contributor: user?.wallet?.address || '0x0000000000000000000000000000000000000000',
-        sourceToken: params.token,
-        sourceAmount: params.amount,
+        splitId: params.splitId,
+        contributor: params.contributor,
+        sourceToken: params.sourceToken,
+        sourceAmount: params.sourceAmount,
         sourceChainId: params.sourceChainId,
         targetChainId: params.targetChainId,
-        contractAddress: params.execute.contractAddress,
-        contractAbi: [] // Mock ABI
+        contractAddress: params.contractAddress,
+        contractAbi: params.contractAbi
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Bridge and execute failed';

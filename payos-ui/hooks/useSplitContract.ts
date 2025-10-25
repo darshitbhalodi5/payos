@@ -276,56 +276,15 @@ export function useSplitContract(): UseSplitContractReturn {
         setIsLoading(true);
         setError(null);
 
-        // Get contract config
-        const contractConfig = getContractConfig(chainId);
+        // Try to get split data from database first
+        const splitData = await SplitService.getSplitById(splitId);
+        
+        if (splitData) {
+          return splitData;
+        }
 
-        // TODO: Implement actual contract calls to get split data
-        // For now, return mock data
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        const mockSplitData: SplitData = {
-          id: splitId,
-          creator: "0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8a9b",
-          recipient: "0x8f3a2c1d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b",
-          targetChainId: chainId,
-          targetToken: "PYUSD",
-          targetAmount: "1000000000", // 1000 PYUSD
-          currentAmount: "500000000", // 500 PYUSD
-          description: "Dinner at Joe's Restaurant",
-          status: "active",
-          createdAt: Date.now() - 4 * 60 * 60 * 1000, // 4 hours ago
-          contributors: [
-            "0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8a9b",
-            "0x5e7b9f4a2c1d3e5f6a7b8c9d0e1f2a3b4c5d6e7f8a",
-          ],
-          contributorAmounts: ["500000000", "500000000"],
-          contributions: [
-            {
-              contributor: "0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8a9b",
-              sourceChainId: 1,
-              sourceToken: "ETH",
-              sourceAmount: "2000000000000000000",
-              targetAmount: "250000000",
-              txHash:
-                "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
-              timestamp: Date.now() - 2 * 60 * 60 * 1000,
-              status: "completed",
-            },
-            {
-              contributor: "0x5e7b9f4a2c1d3e5f6a7b8c9d0e1f2a3b4c5d6e7f8a",
-              sourceChainId: 137,
-              sourceToken: "USDC",
-              sourceAmount: "250000000",
-              targetAmount: "250000000",
-              txHash:
-                "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
-              timestamp: Date.now() - 1 * 60 * 60 * 1000,
-              status: "completed",
-            },
-          ],
-        };
-
-        return mockSplitData;
+        // If not found in database, throw error
+        throw new Error(`Split with ID ${splitId} not found`);
       } catch (err) {
         const errorMessage = extractErrorMessage(err);
         setError(errorMessage);

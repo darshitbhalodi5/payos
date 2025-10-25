@@ -1,12 +1,8 @@
-// Avail Nexus SDK Helper for PayOS Split
-// Real implementation using actual Avail Nexus SDK
-
-import { type AvailNexusConfig, type BridgeAndExecuteParams, type BridgeResult } from './types';
+import { AvailNexusConfig, BridgeResult, BridgeAndExecuteParams } from './types';
 import { getTokenAddress } from './token-config';
 import { formatAmountFromWei, parseAmountToWei } from './utils';
 
-// Import the actual Avail Nexus SDK
-// Note: Replace with actual import when SDK is available
+// TODO: Uncomment when real SDK is available
 // import { NexusSDK } from '@avail-project/nexus-core';
 
 // Interface for the SDK methods
@@ -29,15 +25,14 @@ export class AvailNexusHelper {
   }
 
   /**
-   * Initialize Avail Nexus SDK
-   * Call this once when app loads
+   * Initialize the Avail Nexus SDK
+   * This should be called once when the app starts
    */
   async initialize(_provider: unknown): Promise<void> {
     try {
       console.log('🚀 Initializing Avail Nexus SDK...');
       
       // TODO: Replace with actual SDK initialization
-      // For now, we'll create a mock SDK that matches the expected interface
       // In production, this would be:
       // this.sdk = new NexusSDK({
       //   apiKey: this.config.apiKey,
@@ -46,15 +41,8 @@ export class AvailNexusHelper {
       // });
       // await this.sdk.initialize(provider);
       
-      // Mock SDK implementation that matches real SDK interface
-      this.sdk = {
-        bridgeAndExecute: this.mockBridgeAndExecute.bind(this),
-        getUnifiedBalance: this.mockGetUnifiedBalance.bind(this),
-        getSupportedChains: this.mockGetSupportedChains.bind(this),
-        estimateGas: this.mockEstimateGas.bind(this),
-        getTransactionStatus: this.mockGetTransactionStatus.bind(this),
-        getQuote: this.mockGetQuote.bind(this)
-      } as NexusSDKInterface;
+      // For now, set SDK to null - real implementation needed
+      this.sdk = null;
       
       this.initialized = true;
       console.log('✅ Avail SDK initialized successfully');
@@ -86,7 +74,7 @@ export class AvailNexusHelper {
     contractAbi: unknown[]; // Contract ABI
   }): Promise<BridgeResult> {
     if (!this.isReady()) {
-      throw new Error('SDK not initialized');
+      throw new Error('Avail Nexus SDK not initialized - real SDK implementation needed');
     }
 
     const {
@@ -133,42 +121,30 @@ export class AvailNexusHelper {
       
       const result = await this.sdk!.bridgeAndExecute({
         // Source: What user is paying with
-        token: sourceToken,
-        amount: sourceAmount,
-        sourceChains: [sourceChainId],
-
-        // Destination: Where to send
-        toChainId: targetChainId,
-
-        // Execute: Call your contract after bridging
-        execute: {
-          contractAddress: contractAddress,
-          contractAbi: contractAbi,
-          functionName: "contributeToBill",
-
-          // Build function parameters
-          buildFunctionParams: (_token: string, _amount: string, _chainId: number, _userAddress: string) => {
-            // Generate unique tx hash
-            const txHash = `0x${Math.random().toString(16).substr(2, 64)}`;
-
-            return {
-              functionParams: [
-                splitId, // bytes32 _splitId
-                contributor, // address _contributor
-                sourceChainId, // uint256 _sourceChainId
-                sourceAmount, // uint256 _sourceAmount
-                targetAmount, // uint256 _targetAmount
-                txHash, // bytes32 _txHash
-              ],
-            };
-          },
-
-          // Token approval for PYUSD transfer
-          tokenApproval: {
-            token: "PYUSD",
-            amount: targetAmount,
-          },
-        },
+        sourceToken,
+        sourceAmount,
+        sourceChainId,
+        
+        // Target: What recipient gets
+        targetToken: 'PYUSD',
+        targetAmount,
+        targetChainId,
+        
+        // Contract interaction
+        contractAddress,
+        contractAbi,
+        functionName: 'contributeToBill',
+        functionParams: [
+          splitId,
+          contributor,
+          sourceChainId,
+          sourceToken,
+          sourceAmount,
+          targetAmount
+        ],
+        
+        // Optional: Gas optimization
+        gasLimit: '300000', // Estimated gas for bridge + execute
       });
 
       console.log('✅ Contribution successful:', result);
@@ -188,6 +164,10 @@ export class AvailNexusHelper {
     fromAmount: string,
     toToken: string
   ): Promise<string> {
+    if (!this.isReady()) {
+      throw new Error('Avail Nexus SDK not initialized - real SDK implementation needed');
+    }
+
     try {
       // Use SDK's quote functionality if available
       if (this.sdk && this.sdk.getQuote) {
@@ -208,16 +188,8 @@ export class AvailNexusHelper {
         return fromAmount;
       }
 
-      // For ETH, use price oracle or external API
-      if (fromToken === 'ETH' && toToken === 'PYUSD') {
-        // TODO: Integrate with real price oracle (Pyth Network, Chainlink, etc.)
-        // For now, use a mock rate
-        const ethAmount = parseFloat(formatAmountFromWei(fromAmount, 'ETH'));
-        const pyusdAmount = ethAmount * 2000; // Mock rate - replace with real price
-        return parseAmountToWei(pyusdAmount.toString(), 'PYUSD');
-      }
-
-      throw new Error('Price estimation not available. Use actual SDK quote.');
+      // Real price oracle integration needed
+      throw new Error('Price estimation not available - real SDK implementation needed');
     } catch (error) {
       console.error('Failed to estimate conversion:', error);
       throw error;
@@ -229,7 +201,7 @@ export class AvailNexusHelper {
    */
   async getUnifiedBalance(userAddress: string) {
     if (!this.isReady()) {
-      throw new Error('SDK not initialized');
+      throw new Error('Avail Nexus SDK not initialized - real SDK implementation needed');
     }
 
     try {
@@ -240,7 +212,7 @@ export class AvailNexusHelper {
       });
     } catch (error) {
       console.error('Failed to get unified balance:', error);
-      return null;
+      throw error;
     }
   }
 
@@ -249,7 +221,7 @@ export class AvailNexusHelper {
    */
   async getSupportedChains() {
     if (!this.isReady()) {
-      throw new Error('SDK not initialized');
+      throw new Error('Avail Nexus SDK not initialized - real SDK implementation needed');
     }
 
     try {
@@ -257,7 +229,7 @@ export class AvailNexusHelper {
       return await this.sdk!.getSupportedChains();
     } catch (error) {
       console.error('Failed to get supported chains:', error);
-      return [];
+      throw error;
     }
   }
 
@@ -270,7 +242,7 @@ export class AvailNexusHelper {
     estimatedCost: string;
   }> {
     if (!this.isReady()) {
-      throw new Error('SDK not initialized');
+      throw new Error('Avail Nexus SDK not initialized - real SDK implementation needed');
     }
 
     try {
@@ -291,7 +263,7 @@ export class AvailNexusHelper {
     blockNumber?: number;
   }> {
     if (!this.isReady()) {
-      throw new Error('SDK not initialized');
+      throw new Error('Avail Nexus SDK not initialized - real SDK implementation needed');
     }
 
     try {
@@ -310,130 +282,23 @@ export class AvailNexusHelper {
     return this.config;
   }
 
-  // ============ MOCK METHODS (Replace with real SDK when available) ============
-
   /**
-   * Mock bridge and execute method
-   * TODO: Replace with real SDK implementation
+   * Get SDK instance (for advanced usage)
    */
-  private async mockBridgeAndExecute(_params: unknown): Promise<BridgeResult> {
-    // Simulate processing time
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    return {
-      transactionHash: `0x${Math.random().toString(16).substr(2, 64)}`,
-      status: 'completed',
-      estimatedTime: 120,
-      gasUsed: '150000',
-      gasPrice: '20000000000'
-    };
-  }
-
-  /**
-   * Mock get quote method
-   * TODO: Replace with real SDK implementation
-   */
-  private async mockGetQuote(params: { fromToken: string; toToken: string; amount: string }): Promise<{ toAmount: string }> {
-    const { fromToken, toToken, amount } = params;
-    
-    // Simple 1:1 conversion for stablecoins
-    if (['USDC', 'USDT', 'PYUSD'].includes(fromToken) && ['USDC', 'USDT', 'PYUSD'].includes(toToken)) {
-      return { toAmount: amount };
-    }
-    
-    // Mock ETH to PYUSD conversion
-    if (fromToken === 'ETH' && toToken === 'PYUSD') {
-      const ethAmount = parseFloat(formatAmountFromWei(amount, 'ETH'));
-      const pyusdAmount = ethAmount * 2000; // Mock rate
-      return { toAmount: parseAmountToWei(pyusdAmount.toString(), 'PYUSD') };
-    }
-    
-    return { toAmount: amount };
-  }
-
-  /**
-   * Mock get unified balance method
-   * TODO: Replace with real SDK implementation
-   */
-  private async mockGetUnifiedBalance(_params: unknown): Promise<Record<string, Record<string, string>>> {
-    return {
-      ETH: {
-        '1': '1000000000000000000', // 1 ETH on Ethereum
-        '137': '0', // 0 ETH on Polygon
-        '42161': '500000000000000000', // 0.5 ETH on Arbitrum
-      },
-      USDC: {
-        '1': '1000000000', // 1000 USDC on Ethereum
-        '137': '500000000', // 500 USDC on Polygon
-        '42161': '0', // 0 USDC on Arbitrum
-      },
-      USDT: {
-        '1': '0',
-        '137': '0',
-        '42161': '2000000000', // 2000 USDT on Arbitrum
-      },
-      PYUSD: {
-        '1': '500000000', // 500 PYUSD on Ethereum
-        '137': '0',
-        '42161': '1000000000', // 1000 PYUSD on Arbitrum
-      }
-    };
-  }
-
-  /**
-   * Mock get supported chains method
-   * TODO: Replace with real SDK implementation
-   */
-  private async mockGetSupportedChains(): Promise<Array<{ id: number; name: string; symbol: string }>> {
-    return [
-      { id: 1, name: 'Ethereum', symbol: 'ETH' },
-      { id: 137, name: 'Polygon', symbol: 'MATIC' },
-      { id: 42161, name: 'Arbitrum', symbol: 'ARB' },
-      { id: 10, name: 'Optimism', symbol: 'OP' },
-      { id: 8453, name: 'Base', symbol: 'BASE' },
-    ];
-  }
-
-  /**
-   * Mock get token balance method
-   * TODO: Replace with real SDK implementation
-   */
-  private async mockGetTokenBalance(token: string, address: string, chainId: number): Promise<string> {
-    const balances = await this.mockGetUnifiedBalance({});
-    return balances[token]?.[chainId] || '0';
-  }
-
-  /**
-   * Mock estimate gas method
-   * TODO: Replace with real SDK implementation
-   */
-  private async mockEstimateGas(_params: unknown): Promise<{ gasLimit: string; gasPrice: string; estimatedCost: string }> {
-    return {
-      gasLimit: '200000',
-      gasPrice: '20000000000',
-      estimatedCost: '0.004'
-    };
-  }
-
-  /**
-   * Mock get transaction status method
-   * TODO: Replace with real SDK implementation
-   */
-  private async mockGetTransactionStatus(_txHash: string): Promise<{ status: 'pending' | 'completed' | 'failed'; confirmations: number; blockNumber?: number }> {
-    return {
-      status: 'completed',
-      confirmations: 12,
-      blockNumber: 12345678
-    };
+  getSDK(): NexusSDKInterface | null {
+    return this.sdk;
   }
 }
+
+// ============ MOCK METHODS REMOVED - Real SDK implementation needed ============
 
 // Default configuration
 export const DEFAULT_AVAIL_CONFIG: AvailNexusConfig = {
   apiKey: process.env.NEXT_PUBLIC_AVAIL_NEXUS_API_KEY || '',
-  environment: process.env.NODE_ENV === 'production' ? 'mainnet' : 'testnet',
-  supportedChains: [1, 42161, 10, 8453, 137] // Ethereum, Arbitrum, Optimism, Base, Polygon
+  environment: 'testnet',
+  supportedChains: [1, 137, 42161, 10, 8453],
+  supportedTokens: ['ETH', 'USDC', 'USDT', 'PYUSD']
 };
 
-// Export singleton instance
+// Create and export a singleton instance
 export const availNexusHelper = new AvailNexusHelper(DEFAULT_AVAIL_CONFIG);

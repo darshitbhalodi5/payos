@@ -162,25 +162,37 @@ export default function SplitList({ onSplitSelect, onCreateSplit }: SplitListPro
 
       {/* Splits List */}
       {filteredSplits.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="text-6xl mb-4">💳</div>
-          <h3 className="text-lg font-medium text-white mb-2">No splits found</h3>
-          <p className="text-gray-400 mb-4">
+        <div className="text-center py-16">
+          <div className="text-6xl mb-6">💳</div>
+          <h3 className="text-2xl font-bold text-white mb-4">No splits found</h3>
+          <p className="text-gray-400 mb-8 text-lg">
             {filter === 'my-created' 
-              ? "You haven't created any splits yet"
+              ? "You haven't created any splits yet. Start by creating your first bill split!"
               : filter === 'my-received'
-              ? "You haven't received any splits yet"
-              : "No splits match your current filter"
+              ? "You haven't received any splits yet. Ask your friends to create splits with you!"
+              : filter === 'active'
+              ? "No active splits found. Create a new split to get started!"
+              : filter === 'completed'
+              ? "No completed splits found. Complete some splits to see them here!"
+              : "No splits match your current filter. Try adjusting your filter or create a new split!"
             }
           </p>
-          {filter === 'all' && (
+          <div className="space-y-4">
             <button
               onClick={onCreateSplit}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-lg font-medium"
             >
-              Create Your First Split
+              {filter === 'all' ? 'Create Your First Split' : 'Create New Split'}
             </button>
-          )}
+            {filter !== 'all' && (
+              <button
+                onClick={() => setFilter('all')}
+                className="block mx-auto px-6 py-2 text-gray-400 hover:text-white transition-colors"
+              >
+                View All Splits
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

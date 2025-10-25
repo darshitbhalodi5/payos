@@ -19,7 +19,7 @@ const barlowCondensed = Barlow_Condensed({
 
 export const metadata: Metadata = {
   title: "Payos | Home",
-  description: "Pay employees on any chain with ease.",
+  description: "Split bills on any chain with ease.",
 };
 
 export default function RootLayout({
