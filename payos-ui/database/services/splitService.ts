@@ -1,4 +1,4 @@
-import { SplitCreationParams, SplitData } from "@/lib/types";
+import { SplitCreationParams, SplitData, SplitFilters, PaginatedSplitsResponse } from "@/lib/types";
 
 export class SplitService {
   // Create a new split in database
@@ -232,6 +232,44 @@ export class SplitService {
         return true;
       }
       
+      throw error;
+    }
+  }
+
+  // Get splits with pagination and filters
+  static async getSplitsWithPagination(
+    page: number = 1,
+    limit: number = 10,
+    filters: SplitFilters = {}
+  ): Promise<PaginatedSplitsResponse> {
+    try {
+      const searchParams = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+      });
+
+      // Add filters to search params
+      if (filters.status) searchParams.set('status', filters.status);
+      if (filters.creator) searchParams.set('creator', filters.creator);
+      if (filters.recipient) searchParams.set('recipient', filters.recipient);
+      if (filters.contributor) searchParams.set('contributor', filters.contributor);
+      if (filters.chainId) searchParams.set('chainId', filters.chainId.toString());
+
+      const response = await fetch(`/api/splits?${searchParams.toString()}`);
+      
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('API Error:', error);
+        throw new Error(error.details || error.error || 'Failed to get splits');
+      }
+
+      const result = await response.json();
+      return {
+        splits: result.data,
+        pagination: result.pagination
+      };
+    } catch (error) {
+      console.error('SplitService.getSplitsWithPagination error:', error);
       throw error;
     }
   }

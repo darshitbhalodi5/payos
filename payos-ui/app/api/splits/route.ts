@@ -13,6 +13,9 @@ export async function GET(request: NextRequest) {
     const contributor = searchParams.get("contributor");
     const status = searchParams.get("status");
     const chainId = searchParams.get("chainId");
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "10");
+    const skip = (page - 1) * limit;
 
     const query: {
       creator?: string;
@@ -28,9 +31,25 @@ export async function GET(request: NextRequest) {
     if (status) query.status = status;
     if (chainId) query.targetChainId = parseInt(chainId);
 
-    const splits = await Split.find(query).sort({ createdAt: -1 }).limit(100);
+    const [splits, totalCount] = await Promise.all([
+      Split.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Split.countDocuments(query)
+    ]);
 
-    return NextResponse.json({ success: true, data: splits });
+    const totalPages = Math.ceil(totalCount / limit);
+
+    return NextResponse.json({ 
+      success: true, 
+      data: splits,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1
+      }
+    });
   } catch (error) {
     console.error("Error fetching splits:", error);
     return NextResponse.json(

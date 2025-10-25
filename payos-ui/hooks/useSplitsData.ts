@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useAccount } from "wagmi";
-import { type SplitData, type UseSplitsDataReturn } from "@/lib/types";
+import { type SplitData, type UseSplitsDataReturn, type SplitFilters, type PaginationInfo } from "@/lib/types";
 import { extractErrorMessage } from "@/lib/utils";
 import { SplitService } from "@/database/services/splitService";
 
@@ -13,6 +13,10 @@ export function useSplitsData(): UseSplitsDataReturn {
   const [splits, setSplits] = useState<SplitData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState<PaginationInfo | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentLimit, setCurrentLimit] = useState(10);
+  const [currentFilters, setCurrentFilters] = useState<SplitFilters>({});
 
   // Fetch splits from database
   const fetchSplits = useCallback(async () => {
@@ -97,14 +101,70 @@ export function useSplitsData(): UseSplitsDataReturn {
     fetchSplits();
   }, [fetchSplits]);
 
+  // Fetch splits with pagination
+  const fetchSplitsWithPagination = useCallback(async (
+    page: number,
+    limit: number = 10,
+    filters: SplitFilters = {}
+  ) => {
+    if (!ready || !address) {
+      return { splits: [], pagination: { page: 1, limit: 10, totalCount: 0, totalPages: 0, hasNextPage: false, hasPrevPage: false } };
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const result = await SplitService.getSplitsWithPagination(page, limit, filters);
+      setSplits(result.splits);
+      setPagination(result.pagination);
+      setCurrentPage(page);
+      setCurrentLimit(limit);
+      setCurrentFilters(filters);
+
+      return result;
+    } catch (err) {
+      console.error("Failed to fetch splits with pagination:", err);
+      setError(extractErrorMessage(err));
+      setSplits([]);
+      setPagination(null);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [ready, address]);
+
+  // Set current page
+  const handleSetCurrentPage = useCallback((page: number) => {
+    setCurrentPage(page);
+    fetchSplitsWithPagination(page, currentLimit, currentFilters);
+  }, [fetchSplitsWithPagination, currentLimit, currentFilters]);
+
+  // Set current limit
+  const handleSetCurrentLimit = useCallback((limit: number) => {
+    setCurrentLimit(limit);
+    fetchSplitsWithPagination(1, limit, currentFilters); // Reset to page 1 when changing limit
+  }, [fetchSplitsWithPagination, currentFilters]);
+
+  // Set current filters
+  const handleSetCurrentFilters = useCallback((filters: SplitFilters) => {
+    setCurrentFilters(filters);
+    fetchSplitsWithPagination(1, currentLimit, filters); // Reset to page 1 when changing filters
+  }, [fetchSplitsWithPagination, currentLimit]);
+
   return {
     splits,
     isLoading,
     error,
+    pagination,
     getSplitsByStatus,
     getCreatedSplits,
     getReceivedSplits,
     getContributedSplits,
     refreshSplits,
+    fetchSplitsWithPagination,
+    setCurrentPage: handleSetCurrentPage,
+    setCurrentLimit: handleSetCurrentLimit,
+    setCurrentFilters: handleSetCurrentFilters,
   };
 }

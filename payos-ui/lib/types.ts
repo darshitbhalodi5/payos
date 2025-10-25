@@ -185,15 +185,42 @@ export interface UseSplitContractReturn {
   error: string | null;
 }
 
+export interface PaginationInfo {
+  page: number;
+  limit: number;
+  totalCount: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
+export interface PaginatedSplitsResponse {
+  splits: SplitData[];
+  pagination: PaginationInfo;
+}
+
 export interface UseSplitsDataReturn {
   splits: SplitData[];
   isLoading: boolean;
   error: string | null;
+  pagination: PaginationInfo | null;
   getSplitsByStatus: (status: 'active' | 'completed') => SplitData[];
   getCreatedSplits: () => SplitData[];
   getReceivedSplits: () => SplitData[];
   getContributedSplits: () => SplitData[];
   refreshSplits: () => void;
+  fetchSplitsWithPagination: (page: number, limit?: number, filters?: SplitFilters) => Promise<PaginatedSplitsResponse>;
+  setCurrentPage: (page: number) => void;
+  setCurrentLimit: (limit: number) => void;
+  setCurrentFilters: (filters: SplitFilters) => void;
+}
+
+export interface SplitFilters {
+  status?: 'active' | 'completed' | 'pending' | 'cancelled' | 'expired';
+  creator?: string;
+  recipient?: string;
+  contributor?: string;
+  chainId?: number;
 }
 
 export interface UseAvailNexusReturn {

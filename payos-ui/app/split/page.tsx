@@ -3,7 +3,7 @@
 import { usePrivy } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import SplitList from '@/components/split/SplitList';
+import EnhancedSplitList from '@/components/split/EnhancedSplitList';
 import SplitPaymentInterface from '@/components/split/SplitPaymentInterface';
 
 type ViewMode = 'list' | 'payment';
@@ -68,7 +68,7 @@ export default function SplitPage() {
 
         {/* Content */}
         {viewMode === 'list' && (
-          <SplitList
+          <EnhancedSplitList
             onSplitSelect={handleSplitSelect}
             onCreateSplit={handleCreateSplit}
           />
