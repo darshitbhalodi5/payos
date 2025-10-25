@@ -1,5 +1,3 @@
-import { OP_SEPOLIA_RPC, BASE_SEPOLIA_RPC, POLYGON_AMOY_RPC, ARB_SEPOLIA_RPC, ETH_SEPOLIA_RPC } from '@/lib/environment-config';
-
 export interface TokenInfo {
   symbol: string;
   name: string;
@@ -7,84 +5,6 @@ export interface TokenInfo {
   address: Record<number, string>;
   logo?: string;
 }
-
-export interface ChainInfo {
-  id: number;
-  name: string;
-  symbol: string;
-  rpcUrl: string;
-  blockExplorer: string;
-  logo?: string;
-  nativeCurrency: {
-    name: string;
-    symbol: string;
-    decimals: number;
-  };
-}
-
-// Supported Chains
-export const SUPPORTED_CHAINS: ChainInfo[] = [
-  {
-    id: 11155111,
-    name: 'Ethereum Sepolia',
-    symbol: 'ETH',
-    rpcUrl: ETH_SEPOLIA_RPC,
-    blockExplorer: 'https://sepolia.etherscan.io',
-    nativeCurrency: {
-      name: 'Ether',
-      symbol: 'ETH',
-      decimals: 18,
-    },
-  },
-  {
-    id: 421614,
-    name: 'Arbitrum Sepolia',
-    symbol: 'ARB',
-    rpcUrl: ARB_SEPOLIA_RPC,
-    blockExplorer: 'https://sepolia.arbiscan.io',
-    nativeCurrency: {
-      name: 'Ether',
-      symbol: 'ETH',
-      decimals: 18,
-    },
-  },
-  {
-    id: 11155420,
-    name: 'Optimism Sepolia',
-    symbol: 'OP',
-    rpcUrl: OP_SEPOLIA_RPC,
-    blockExplorer: 'https://sepolia-optimism.etherscan.io',
-    nativeCurrency: {
-      name: 'Ether',
-      symbol: 'ETH',
-      decimals: 18,
-    },
-  },
-  {
-    id: 84532,
-    name: 'Base Sepolia',
-    symbol: 'BASE',
-    rpcUrl: BASE_SEPOLIA_RPC,
-    blockExplorer: 'https://sepolia.basescan.org',
-    nativeCurrency: {
-      name: 'Ether',
-      symbol: 'ETH',
-      decimals: 18,
-    },
-  },
-  {
-    id: 80002,
-    name: 'Polygon Amoy',
-    symbol: 'POL',
-    rpcUrl: POLYGON_AMOY_RPC,
-    blockExplorer: 'https://amoy.polygonscan.com',
-    nativeCurrency: {
-      name: 'Polygon',
-      symbol: 'POL',
-      decimals: 18,
-    },
-  },
-];
 
 // Supported Tokens with addresses for each chain
 export const SUPPORTED_TOKENS: TokenInfo[] = [
@@ -158,10 +78,6 @@ export function getTokenInfo(symbol: string): TokenInfo | null {
   return SUPPORTED_TOKENS.find(t => t.symbol === symbol) || null;
 }
 
-export function getChainInfo(chainId: number): ChainInfo | null {
-  return SUPPORTED_CHAINS.find(c => c.id === chainId) || null;
-}
-
 export function getAvailableTokens(chainId: number): TokenInfo[] {
   const availableSymbols = TOKEN_AVAILABILITY[chainId] || [];
   return SUPPORTED_TOKENS.filter(token => availableSymbols.includes(token.symbol));
@@ -176,10 +92,6 @@ export function validateTokenSelection(symbol: string, chainId: number): boolean
   return isTokenAvailableOnChain(symbol, chainId);
 }
 
-export function validateChainSelection(chainId: number): boolean {
-  return SUPPORTED_CHAINS.some(chain => chain.id === chainId);
-}
-
 // Default configurations
-export const DEFAULT_CHAIN_ID = 11155111; // Arbitrum
+export const DEFAULT_CHAIN_ID = 11155111;
 export const DEFAULT_TOKEN = 'PYUSD';
