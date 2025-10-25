@@ -105,10 +105,10 @@ export default function AvailNexusIntegration({
         contractAbi: [], // Will be provided by the hook
       });
 
-      if (result.success) {
+      if (result.success && result.transactionHash) {
         onSuccess(result.transactionHash);
       } else {
-        onError('Transaction failed');
+        onError(result.error || 'Transaction failed');
       }
     } catch (error) {
       console.error('Avail Nexus SDK error:', error);

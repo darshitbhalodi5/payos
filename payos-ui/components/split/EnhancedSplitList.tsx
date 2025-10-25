@@ -8,6 +8,7 @@ import { ChevronLeft, ChevronRight, Plus, Eye, DollarSign, Filter, X } from 'luc
 interface EnhancedSplitListProps {
   onSplitSelect: (splitId: string) => void;
   onCreateSplit: () => void;
+  onContribute?: (splitId: string) => void;
 }
 
 const SUPPORTED_CHAINS = [
@@ -42,7 +43,7 @@ const getFiltersForType = (filterType: FilterType, address?: string) => {
   }
 };
 
-export default function EnhancedSplitList({ onSplitSelect, onCreateSplit }: EnhancedSplitListProps) {
+export default function EnhancedSplitList({ onSplitSelect, onCreateSplit, onContribute }: EnhancedSplitListProps) {
   const { address } = useAccount();
   const { 
     splits, 
@@ -332,7 +333,7 @@ export default function EnhancedSplitList({ onSplitSelect, onCreateSplit }: Enha
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {splits.map((split) => (
               <div
-                key={split.id}
+                key={split.splitId}
                 className="bg-gray-800 rounded-lg p-6 border border-gray-700 hover:border-gray-600 transition-colors"
               >
                 {/* Split Header */}
@@ -380,7 +381,7 @@ export default function EnhancedSplitList({ onSplitSelect, onCreateSplit }: Enha
                 {/* Actions */}
                 <div className="flex gap-2">
                   <button
-                    onClick={() => onSplitSelect(split.id)}
+                    onClick={() => onSplitSelect(split.splitId)}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors"
                   >
                     <Eye className="w-4 h-4" />
@@ -389,7 +390,7 @@ export default function EnhancedSplitList({ onSplitSelect, onCreateSplit }: Enha
                   
                   {canContribute(split) && (
                     <button
-                      onClick={() => onSplitSelect(split.id)}
+                      onClick={() => onContribute ? onContribute(split.splitId) : onSplitSelect(split.splitId)}
                       className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                     >
                       <DollarSign className="w-4 h-4" />

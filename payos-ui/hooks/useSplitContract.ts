@@ -253,7 +253,7 @@ export function useSplitContract(): UseSplitContractReturn {
           contractAbi: SPLIT_BILL_ABI as unknown as unknown[],
         });
 
-        return result.transactionHash;
+        return result.transactionHash || '';
       } catch (err) {
         const errorMessage = extractErrorMessage(err);
         setError(errorMessage);

@@ -2,7 +2,7 @@
 // This eliminates duplication across hooks and components
 
 export interface SplitData {
-  id: string;
+  splitId: string;
   creator: string;
   recipient: string;
   targetChainId: number;
@@ -88,11 +88,12 @@ export interface BridgeAndExecuteParams {
 
 export interface BridgeResult {
   success: boolean;
-  transactionHash: string;
+  transactionHash?: string;
   status: 'pending' | 'completed' | 'failed';
-  estimatedTime: number;
+  estimatedTime?: number;
   gasUsed?: string;
   gasPrice?: string;
+  error?: string;
 }
 
 // Chain and token configuration types

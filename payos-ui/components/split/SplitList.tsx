@@ -196,8 +196,8 @@ export default function SplitList({ onSplitSelect, onCreateSplit }: SplitListPro
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredSplits.map((split) => (
             <div
-              key={split.id}
-              onClick={() => onSplitSelect(split.id)}
+              key={split.splitId}
+              onClick={() => onSplitSelect(split.splitId)}
               className="bg-gray-800 rounded-lg p-6 border border-gray-700 hover:border-gray-600 cursor-pointer transition-colors"
             >
               {/* Split Header */}

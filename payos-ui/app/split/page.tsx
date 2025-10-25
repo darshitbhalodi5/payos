@@ -4,9 +4,10 @@ import { usePrivy } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import EnhancedSplitList from '@/components/split/EnhancedSplitList';
-import SplitPaymentInterface from '@/components/split/SplitPaymentInterface';
+import SplitDetailsView from '@/components/split/SplitDetailsView';
+import SplitContributionInterface from '@/components/split/SplitContributionInterface';
 
-type ViewMode = 'list' | 'payment';
+type ViewMode = 'list' | 'view' | 'contribute';
 
 export default function SplitPage() {
   const { authenticated } = usePrivy();
@@ -36,7 +37,12 @@ export default function SplitPage() {
 
   const handleSplitSelect = (splitId: string) => {
     setSelectedSplitId(splitId);
-    setViewMode('payment');
+    setViewMode('view');
+  };
+
+  const handleContribute = (splitId: string) => {
+    setSelectedSplitId(splitId);
+    setViewMode('contribute');
   };
 
   const handleBackToList = () => {
@@ -44,7 +50,7 @@ export default function SplitPage() {
     setSelectedSplitId('');
   };
 
-  const handlePaymentComplete = () => {
+  const handleContributionComplete = () => {
     // Refresh the split data or show success message
     setViewMode('list');
     setSelectedSplitId('');
@@ -53,31 +59,28 @@ export default function SplitPage() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       <div className="container mx-auto px-4 py-8">
-        {/* Navigation */}
-        {viewMode !== 'list' && (
-          <div className="mb-6">
-            <button
-              onClick={handleBackToList}
-              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
-            >
-              <span>←</span>
-              <span>Back to Splits</span>
-            </button>
-          </div>
-        )}
-
         {/* Content */}
         {viewMode === 'list' && (
           <EnhancedSplitList
             onSplitSelect={handleSplitSelect}
             onCreateSplit={handleCreateSplit}
+            onContribute={handleContribute}
           />
         )}
 
-        {viewMode === 'payment' && selectedSplitId && (
-          <SplitPaymentInterface
+        {viewMode === 'view' && selectedSplitId && (
+          <SplitDetailsView
             splitId={selectedSplitId}
-            onPaymentComplete={handlePaymentComplete}
+            onBack={handleBackToList}
+            onContribute={handleContribute}
+          />
+        )}
+
+        {viewMode === 'contribute' && selectedSplitId && (
+          <SplitContributionInterface
+            splitId={selectedSplitId}
+            onBack={handleBackToList}
+            onContributionComplete={handleContributionComplete}
           />
         )}
       </div>

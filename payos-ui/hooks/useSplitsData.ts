@@ -40,7 +40,7 @@ export function useSplitsData(): UseSplitsDataReturn {
       // Combine all splits and remove duplicates
       const allSplits = [...createdSplits, ...receivedSplits, ...contributedSplits];
       const uniqueSplits = allSplits.filter((split, index, self) => 
-        index === self.findIndex(s => s.id === split.id)
+        index === self.findIndex(s => s.splitId === split.splitId)
       );
 
       // Sort by creation date (newest first)

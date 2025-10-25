@@ -32,7 +32,7 @@ export class SplitService {
       if (error instanceof Error && (error.message.includes('MongoDB') || error.message.includes('bad auth') || error.message.includes('authentication failed'))) {
         console.warn('MongoDB not available, returning mock split for development');
         return {
-          id: splitData.splitId,
+          splitId: splitData.splitId,
           creator: splitData.creator || '',
           recipient: splitData.recipient,
           targetChainId: splitData.targetChainId,
