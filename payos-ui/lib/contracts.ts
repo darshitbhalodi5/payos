@@ -1,6 +1,6 @@
 import { type ContractAddresses, type ContractConfig } from './types';
 import { PAYOS_SPLIT_ABI } from './contract-abi';
-import { SUPPORTED_CHAINS } from './chain-config';
+// import { SUPPORTED_CHAINS } from './chain-config';
 
 // Contract addresses for each chain
 export const SPLIT_BILL_ADDRESSES: ContractAddresses = {

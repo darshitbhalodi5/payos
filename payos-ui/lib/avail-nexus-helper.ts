@@ -32,7 +32,7 @@ export class AvailNexusHelper {
    * Initialize Avail Nexus SDK
    * Call this once when app loads
    */
-  async initialize(provider: unknown): Promise<void> {
+  async initialize(_provider: unknown): Promise<void> {
     try {
       console.log('🚀 Initializing Avail Nexus SDK...');
       

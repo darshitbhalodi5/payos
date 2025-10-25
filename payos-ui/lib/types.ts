@@ -10,11 +10,17 @@ export interface SplitData {
   targetAmount: string;
   currentAmount: string;
   description: string;
-  status: 'active' | 'completed';
-  contributors: ContributorInfo[];
-  contributions: ContributionInfo[];
+  status: 'active' | 'completed' | 'pending' | 'cancelled' | 'expired';
+  contributors: string[];
+  contributorAmounts: string[];
+  contributions?: ContributionInfo[];
   createdAt: number;
   completedAt?: number;
+  cancelledAt?: number;
+  transactionHash?: string;
+  blockNumber?: number;
+  gasUsed?: string;
+  gasPrice?: string;
 }
 
 export interface ContributorInfo {
@@ -142,6 +148,7 @@ export interface SplitCreationParams {
   description: string;
   contributors: string[];
   contributorAmounts: string[];
+  creator?: string;
 }
 
 export interface ContributionParams {

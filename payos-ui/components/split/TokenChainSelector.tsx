@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   getAvailableTokens,
   validateTokenSelection,
@@ -29,6 +29,11 @@ export default function TokenChainSelector({
   const [availableTokens, setAvailableTokens] = useState<TokenInfo[]>([]);
   const [isValidSelection, setIsValidSelection] = useState(true);
 
+  // Memoize the token change handler to prevent infinite loops
+  const handleTokenChangeCallback = useCallback((tokenSymbol: string) => {
+    onTokenChange(tokenSymbol);
+  }, [onTokenChange]);
+
   // Update available tokens when chain changes
   useEffect(() => {
     const tokens = getAvailableTokens(selectedChainId);
@@ -40,9 +45,9 @@ export default function TokenChainSelector({
 
     // If current token is not available, select the first available token
     if (!isTokenValid && tokens.length > 0) {
-      onTokenChange(tokens[0].symbol);
+      handleTokenChangeCallback(tokens[0].symbol);
     }
-  }, [selectedChainId, selectedToken, onTokenChange]);
+  }, [selectedChainId, selectedToken, handleTokenChangeCallback]);
 
   const handleChainChange = (chainId: number) => {
     if (validateChainSelection(chainId)) {
