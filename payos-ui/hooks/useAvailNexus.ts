@@ -2,18 +2,16 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
+import { availNexusHelper, DEFAULT_AVAIL_CONFIG } from '@/lib/avail-nexus-helper';
 import { 
-  createAvailNexusSDK, 
-  DEFAULT_NEXUS_CONFIG, 
-  type AvailNexusSDK,
-  type BridgeAndExecuteParams,
+  type AvailNexusConfig, 
+  type BridgeAndExecuteParams, 
   type BridgeResult,
-  type TokenInfo
-} from '@/lib/avail-nexus';
+  type UseAvailNexusReturn 
+} from '@/lib/types';
 
-export function useAvailNexus() {
+export function useAvailNexus(): UseAvailNexusReturn {
   const { user, ready } = usePrivy();
-  const [sdk, setSdk] = useState<AvailNexusSDK | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,16 +28,13 @@ export function useAvailNexus() {
         setIsLoading(true);
         setError(null);
 
-        const nexusSDK = createAvailNexusSDK(DEFAULT_NEXUS_CONFIG);
-        
         // Get the provider from the wallet
         const provider = window.ethereum;
         if (!provider) {
           throw new Error('No wallet provider found');
         }
 
-        await nexusSDK.initialize(provider);
-        setSdk(nexusSDK);
+        await availNexusHelper.initialize(provider);
         setIsInitialized(true);
       } catch (err) {
         console.error('Failed to initialize Avail Nexus SDK:', err);
@@ -55,83 +50,95 @@ export function useAvailNexus() {
 
   // Bridge and execute function
   const bridgeAndExecute = useCallback(async (params: BridgeAndExecuteParams): Promise<BridgeResult> => {
-    if (!sdk || !isInitialized) {
+    if (!isInitialized) {
       throw new Error('SDK not initialized');
     }
 
     try {
       setError(null);
-      return await sdk.bridgeAndExecute(params);
+      return await availNexusHelper.contributeToSplit({
+        splitId: '0x0000000000000000000000000000000000000000000000000000000000000000', // Mock split ID
+        contributor: user?.wallet?.address || '0x0000000000000000000000000000000000000000',
+        sourceToken: params.token,
+        sourceAmount: params.amount,
+        sourceChainId: params.sourceChainId,
+        targetChainId: params.targetChainId,
+        contractAddress: params.execute.contractAddress,
+        contractAbi: [] // Mock ABI
+      });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Bridge and execute failed';
       setError(errorMessage);
       throw err;
     }
-  }, [sdk, isInitialized]);
+  }, [isInitialized, user?.wallet?.address]);
 
   // Get token balance
   const getTokenBalance = useCallback(async (token: string, address: string, chainId: number): Promise<string> => {
-    if (!sdk || !isInitialized) {
+    if (!isInitialized) {
       throw new Error('SDK not initialized');
     }
 
     try {
       setError(null);
-      return await sdk.getTokenBalance(token, address, chainId);
+      const balances = await availNexusHelper.getUnifiedBalance(address);
+      return balances?.[token]?.[chainId] || '0';
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to get token balance';
       setError(errorMessage);
       throw err;
     }
-  }, [sdk, isInitialized]);
+  }, [isInitialized]);
 
   // Get supported tokens
-  const getSupportedTokens = useCallback(async (chainId: number): Promise<TokenInfo[]> => {
-    if (!sdk || !isInitialized) {
+  const getSupportedTokens = useCallback(async (chainId: number) => {
+    if (!isInitialized) {
       throw new Error('SDK not initialized');
     }
 
     try {
       setError(null);
-      return await sdk.getSupportedTokens(chainId);
+      const chains = await availNexusHelper.getSupportedChains();
+      const chain = chains.find((c: { id: number }) => c.id === chainId);
+      return chain ? [{ symbol: 'ETH', name: 'Ethereum', decimals: 18, address: '0x0000000000000000000000000000000000000000', chainId }] : [];
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to get supported tokens';
       setError(errorMessage);
       throw err;
     }
-  }, [sdk, isInitialized]);
+  }, [isInitialized]);
 
   // Estimate gas
   const estimateGas = useCallback(async (params: BridgeAndExecuteParams) => {
-    if (!sdk || !isInitialized) {
+    if (!isInitialized) {
       throw new Error('SDK not initialized');
     }
 
     try {
       setError(null);
-      return await sdk.estimateGas(params);
+      return await availNexusHelper.estimateGas(params);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to estimate gas';
       setError(errorMessage);
       throw err;
     }
-  }, [sdk, isInitialized]);
+  }, [isInitialized]);
 
   // Get transaction status
   const getTransactionStatus = useCallback(async (txHash: string) => {
-    if (!sdk || !isInitialized) {
+    if (!isInitialized) {
       throw new Error('SDK not initialized');
     }
 
     try {
       setError(null);
-      return await sdk.getTransactionStatus(txHash);
+      return await availNexusHelper.getTransactionStatus(txHash);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to get transaction status';
       setError(errorMessage);
       throw err;
     }
-  }, [sdk, isInitialized]);
+  }, [isInitialized]);
 
   // Clear error
   const clearError = useCallback(() => {
@@ -139,7 +146,7 @@ export function useAvailNexus() {
   }, []);
 
   return {
-    sdk,
+    sdk: availNexusHelper,
     isInitialized,
     isLoading,
     error,

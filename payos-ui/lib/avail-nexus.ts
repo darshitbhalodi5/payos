@@ -53,7 +53,7 @@ class AvailNexusSDK {
     this.config = config;
   }
 
-  async initialize(provider: unknown): Promise<void> {
+  async initialize(_provider: unknown): Promise<void> {
     try {
       // Initialize the SDK with the provider
       console.log('Initializing Avail Nexus SDK...');

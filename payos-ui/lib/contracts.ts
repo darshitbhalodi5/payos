@@ -1,76 +1,18 @@
-export interface ContractAddresses {
-  [chainId: number]: string;
-}
-
-export interface ContractConfig {
-  address: string;
-  abi: unknown[];
-  chainId: number;
-  name: string;
-  blockExplorer: string;
-}
+import { type ContractAddresses, type ContractConfig } from './types';
+import { PAYOS_SPLIT_ABI } from './contract-abi';
+import { SUPPORTED_CHAINS } from './chain-config';
 
 // Contract addresses for each chain
 export const SPLIT_BILL_ADDRESSES: ContractAddresses = {
-  11155111: '0x7EbF1eE41F3212Eb48640a08F639E851B1f73aEf', // Ethereum
-  421614: '0x7EbF1eE41F3212Eb48640a08F639E851B1f73aEf', // Arbitrum
-  11155420: '0x7EbF1eE41F3212Eb48640a08F639E851B1f73aEf', // Optimism
-  84532: '0x7EbF1eE41F3212Eb48640a08F639E851B1f73aEf', // Base
-  80002: '0x7EbF1eE41F3212Eb48640a08F639E851B1f73aEf', // Polygon
+  11155111: '0x7EbF1eE41F3212Eb48640a08F639E851B1f73aEf', // Ethereum Sepolia
+  421614: '0x3bdeD6E96eeeB7858701A0291dBA9A84c8b9D801', // Arbitrum Sepolia
+  11155420: '0x3bdeD6E96eeeB7858701A0291dBA9A84c8b9D801', // Optimism Sepolia
+  84532: '0x3bdeD6E96eeeB7858701A0291dBA9A84c8b9D801', // Base Sepolia
+  80002: '0x3bdeD6E96eeeB7858701A0291dBA9A84c8b9D801', // Polygon Amoy
 };
 
-// Contract ABI (simplified version)
-export const SPLIT_BILL_ABI = [
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_recipient",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_targetChainId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_targetToken",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_targetAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "_description",
-        "type": "string"
-      },
-      {
-        "internalType": "address[]",
-        "name": "_contributors",
-        "type": "address[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "_contributorAmounts",
-        "type": "uint256[]"
-      }
-    ],
-    "name": "createSplit",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-];
+// Export the comprehensive ABI
+export const SPLIT_BILL_ABI = PAYOS_SPLIT_ABI;
 
 // Helper function to get contract address for a chain
 export function getContractAddress(chainId: number): string {
@@ -86,7 +28,7 @@ export function getContractConfig(chainId: number): ContractConfig {
   const address = getContractAddress(chainId);
   return {
     address,
-    abi: SPLIT_BILL_ABI,
+    abi: SPLIT_BILL_ABI as unknown as unknown[],
     chainId,
     name: getChainName(chainId),
     blockExplorer: getBlockExplorer(chainId)

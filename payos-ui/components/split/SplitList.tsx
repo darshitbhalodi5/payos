@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
-import { useSplitsData, type SplitData } from '@/hooks/useSplitsData';
+import { useSplitsData } from '@/hooks/useSplitsData';
 
 interface SplitListProps {
   onSplitSelect: (splitId: string) => void;
@@ -24,7 +23,6 @@ const SUPPORTED_TOKENS = [
 ];
 
 export default function SplitList({ onSplitSelect, onCreateSplit }: SplitListProps) {
-  const { user } = usePrivy();
   const { 
     splits, 
     isLoading, 

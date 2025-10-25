@@ -2,51 +2,20 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
-import { useAccount, useReadContract } from 'wagmi';
+import { useAccount } from 'wagmi';
 import { 
   getContractConfig, 
-  isContractDeployed,
-  getDeployedChains 
+  getDeployedChains,
+  SPLIT_BILL_ABI
 } from '@/lib/contracts';
-import { getTokenInfo } from '@/lib/token-config';
+import { 
+  type SplitData, 
+  type UseSplitsDataReturn 
+} from '@/lib/types';
+import { extractErrorMessage } from '@/lib/utils';
 
-export interface SplitData {
-  id: string;
-  creator: string;
-  recipient: string;
-  targetChainId: number;
-  targetToken: string;
-  targetAmount: string;
-  currentAmount: string;
-  description: string;
-  status: 'active' | 'completed';
-  contributors: ContributorInfo[];
-  contributions: ContributionInfo[];
-  createdAt: number;
-  completedAt?: number;
-}
-
-export interface ContributorInfo {
-  contributor: string;
-  targetAmount: string;
-  contributedAmount: string;
-  hasContributed: boolean;
-  lastContributionTime: number;
-}
-
-export interface ContributionInfo {
-  contributor: string;
-  sourceChainId: number;
-  sourceToken: string;
-  sourceAmount: string;
-  targetAmount: string;
-  txHash: string;
-  timestamp: number;
-  status: 'pending' | 'completed' | 'failed';
-}
-
-export function useSplitsData() {
-  const { user, ready } = usePrivy();
+export function useSplitsData(): UseSplitsDataReturn {
+  const { ready } = usePrivy();
   const { address } = useAccount();
   const [splits, setSplits] = useState<SplitData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -67,16 +36,8 @@ export function useSplitsData() {
       setIsLoading(true);
       setError(null);
 
-      const allSplits: SplitData[] = [];
-
-      // For now, we'll use a mock implementation since we need to implement
-      // the contract functions to get splits by address
-      // In production, you would need to add these functions to the contract:
-      // - getSplitsByCreator(address creator)
-      // - getSplitsByRecipient(address recipient)
-      // - getAllSplits() with pagination
-
-      // Mock data for demonstration
+      // For now, use mock data since we need to implement proper contract calls
+      // In production, you would use ethers.js or viem to make direct contract calls
       const mockSplits: SplitData[] = [
         {
           id: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
@@ -173,7 +134,7 @@ export function useSplitsData() {
       setSplits(userSplits);
     } catch (err) {
       console.error('Failed to fetch splits:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch splits');
+      setError(extractErrorMessage(err));
     } finally {
       setIsLoading(false);
     }

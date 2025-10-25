@@ -3,70 +3,44 @@
 import { useState, useEffect, useCallback } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useAvailNexus } from './useAvailNexus';
-import { useAccount, useWriteContract } from 'wagmi';
+import { useAccount, useWriteContract, useReadContract } from 'wagmi';
 import { parseUnits } from 'viem';
 import { 
   getContractConfig, 
   isContractDeployed, 
   getDeployedChains,
-  type ContractConfig 
+  SPLIT_BILL_ABI
 } from '@/lib/contracts';
 import { getTokenAddress } from '@/lib/token-config';
+import { availNexusHelper } from '@/lib/avail-nexus-helper';
+import { 
+  type SplitData, 
+  type SplitCreationParams, 
+  type ContributionParams,
+  type UseSplitContractReturn 
+} from '@/lib/types';
+import { validateSplitCreation, extractErrorMessage } from '@/lib/utils';
 
-export interface SplitData {
-  id: string;
-  creator: string;
-  recipient: string;
-  targetChainId: number;
-  targetToken: string;
-  targetAmount: string;
-  currentAmount: string;
-  description: string;
-  status: 'active' | 'completed';
-  contributors: ContributorInfo[];
-  contributions: ContributionInfo[];
-  createdAt?: string;
-}
-
-export interface ContributorInfo {
-  contributor: string;
-  targetAmount: string;
-  contributedAmount: string;
-  hasContributed: boolean;
-  lastContributionTime: number;
-}
-
-export interface ContributionInfo {
-  contributor: string;
-  sourceChainId: number;
-  sourceToken: string;
-  sourceAmount: string;
-  targetAmount: string;
-  txHash: string;
-  timestamp: number;
-  status?: 'active' | 'completed';
-}
-
-export function useSplitContract() {
+export function useSplitContract(): UseSplitContractReturn {
   const { user, ready } = usePrivy();
   const { chainId: connectedChainId } = useAccount();
   const { writeContractAsync } = useWriteContract();
-  const { bridgeAndExecute, isInitialized: nexusInitialized } = useAvailNexus();
+  const { isInitialized: nexusInitialized } = useAvailNexus();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Create split
-  const createSplit = useCallback(async (params: {
-    recipient: string;
-    targetChainId: number;
-    targetToken: string;
-    targetAmount: string;
-    description: string;
-    contributors: string[];
-    contributorAmounts: string[];
-  }): Promise<string> => {
+  const createSplit = useCallback(async (params: SplitCreationParams): Promise<string> => {
     if (!ready || !user?.wallet?.address) {
       throw new Error('Wallet not connected');
+    }
+
+    // Validate parameters
+    const validation = validateSplitCreation(params);
+    if (!validation.isValid) {
+      const errorMessage = validation.errors.join(', ');
+      setError(errorMessage);
+      throw new Error(errorMessage);
     }
 
     if (!isContractDeployed(params.targetChainId)) {
@@ -98,23 +72,23 @@ export function useSplitContract() {
       // On-chain write: createSplit
       const txHash = await writeContractAsync({
         address: contractConfig.address as `0x${string}`,
-        abi: contractConfig.abi as any,
+        abi: SPLIT_BILL_ABI,
         functionName: 'createSplit',
         args: [
-          params.recipient,
+          params.recipient as `0x${string}`,
           BigInt(params.targetChainId),
           tokenAddress as `0x${string}`,
           targetAmountWei,
           params.description,
-          params.contributors,
+          params.contributors.map(addr => addr as `0x${string}`),
           contributorAmountsWei
         ]
       });
 
-      // Return tx hash as the reference; backend/contract emits SplitCreated with splitId
+      // Return tx hash as the reference; contract emits SplitCreated with splitId
       return txHash as string;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create split';
+      const errorMessage = extractErrorMessage(err);
       setError(errorMessage);
       throw err;
     } finally {
@@ -123,14 +97,7 @@ export function useSplitContract() {
   }, [ready, user?.wallet?.address, connectedChainId, writeContractAsync]);
 
   // Create simple split (equal distribution)
-  const createSimpleSplit = useCallback(async (params: {
-    recipient: string;
-    targetChainId: number;
-    targetToken: string;
-    targetAmount: string;
-    description: string;
-    contributors: string[];
-  }): Promise<string> => {
+  const createSimpleSplit = useCallback(async (params: Omit<SplitCreationParams, 'contributorAmounts'>): Promise<string> => {
     if (!ready || !user?.wallet?.address) {
       throw new Error('Wallet not connected');
     }
@@ -152,7 +119,7 @@ export function useSplitContract() {
         contributorAmounts
       });
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create simple split';
+      const errorMessage = extractErrorMessage(err);
       setError(errorMessage);
       throw err;
     } finally {
@@ -161,15 +128,7 @@ export function useSplitContract() {
   }, [ready, user?.wallet?.address, createSplit]);
 
   // Contribute to split using Avail Nexus SDK
-  const contributeToSplit = useCallback(async (params: {
-    splitId: string;
-    sourceChainId: number;
-    sourceToken: string;
-    sourceAmount: string;
-    targetChainId: number;
-    targetToken: string;
-    targetAmount: string;
-  }): Promise<string> => {
+  const contributeToSplit = useCallback(async (params: ContributionParams): Promise<string> => {
     if (!ready || !user?.wallet?.address) {
       throw new Error('Wallet not connected');
     }
@@ -198,44 +157,30 @@ export function useSplitContract() {
       }
 
       // Convert amounts to wei
-      const sourceAmountWei = (parseFloat(params.sourceAmount) * 1e18).toString(); // Assuming 18 decimals for source
-      const targetAmountWei = (parseFloat(params.targetAmount) * 1e6).toString(); // Assuming 6 decimals for target
+      const sourceAmountWei = parseUnits(params.sourceAmount, 18).toString(); // Assuming 18 decimals for source
+      const targetAmountWei = parseUnits(params.targetAmount, 6).toString(); // Assuming 6 decimals for target
 
       // Use Avail Nexus SDK to bridge and execute
-      const result = await bridgeAndExecute({
-        token: params.sourceToken,
-        amount: sourceAmountWei,
+      const result = await availNexusHelper.contributeToSplit({
+        splitId: params.splitId,
+        contributor: user.wallet.address,
+        sourceToken: params.sourceToken,
+        sourceAmount: sourceAmountWei,
         sourceChainId: params.sourceChainId,
         targetChainId: params.targetChainId,
-        recipient: contractConfig.address,
-        execute: {
-          contractAddress: contractConfig.address,
-          functionName: 'contributeToBill',
-          functionParams: [
-            params.splitId,
-            user.wallet.address,
-            params.sourceChainId,
-            params.sourceToken,
-            sourceAmountWei,
-            targetAmountWei,
-            `0x${Math.random().toString(16).substr(2, 64)}` // Mock tx hash
-          ]
-        },
-        tokenApproval: {
-          token: params.targetToken,
-          amount: targetAmountWei
-        }
+        contractAddress: contractConfig.address,
+        contractAbi: SPLIT_BILL_ABI as unknown as unknown[]
       });
 
       return result.transactionHash;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to contribute to split';
+      const errorMessage = extractErrorMessage(err);
       setError(errorMessage);
       throw err;
     } finally {
       setIsLoading(false);
     }
-  }, [ready, user?.wallet?.address, nexusInitialized, bridgeAndExecute]);
+  }, [ready, user?.wallet?.address, nexusInitialized]);
 
   // Get split data
   const getSplitData = useCallback(async (splitId: string, chainId: number): Promise<SplitData> => {
@@ -264,6 +209,7 @@ export function useSplitContract() {
         currentAmount: '500000000', // 500 PYUSD
         description: 'Dinner at Joe\'s Restaurant',
         status: 'active',
+        createdAt: Date.now() - 4 * 60 * 60 * 1000, // 4 hours ago
         contributors: [
           {
             contributor: '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8a9b',
@@ -306,7 +252,7 @@ export function useSplitContract() {
 
       return mockSplitData;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to get split data';
+      const errorMessage = extractErrorMessage(err);
       setError(errorMessage);
       throw err;
     } finally {
