@@ -1,16 +1,14 @@
 "use client";
 
 import { usePrivy } from "@privy-io/react-auth";
-import { useState } from "react";
 import Image from "next/image";
-import { Wallet, MenuIcon } from "lucide-react";
+import { Wallet, Copy, Check } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 export default function Navbar() {
   const { ready, authenticated, user, login, logout } = usePrivy();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const pathname = usePathname();
+  const [copied, setCopied] = useState(false);
 
   // handle wallet connect using privy
   const handleWalletConnect = () => {
@@ -26,9 +24,18 @@ export default function Navbar() {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  // check if a navigation link is active
-  const isActive = (path: string) => {
-    return pathname === path;
+  // handle copy wallet address
+  const handleCopyAddress = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering the wallet connect/logout
+    if (user?.wallet?.address) {
+      try {
+        await navigator.clipboard.writeText(user.wallet.address);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
+      } catch (err) {
+        console.error('Failed to copy address:', err);
+      }
+    }
   };
 
   return (
@@ -48,93 +55,49 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Desktop Menu */}
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-4">
-              <Link
-                href="/payroll"
-                className={`flex items-center gap-2 px-4 py-1 rounded-xl font-semibold shadow-sm transition-colors duration-150 text-sm md:text-base md:px-6 focus:outline-none focus:ring-2 focus:ring-accent/50 border ${isActive("/payroll")
-                    ? "bg-accent text-background border-accent"
-                    : "text-foreground hover:text-accent hover:bg-foreground/10 border-transparent hover:border-accent/20"
-                  }`}
-              >
-                Payroll
-              </Link>
-              <Link
-                href="/split"
-                className={`flex items-center gap-2 px-4 py-1 rounded-xl font-semibold shadow-sm transition-colors duration-150 text-sm md:text-base md:px-6 focus:outline-none focus:ring-2 focus:ring-accent/50 border ${isActive("/split")
-                    ? "bg-accent text-background border-accent"
-                    : "text-foreground hover:text-accent hover:bg-foreground/10 border-transparent hover:border-accent/20"
-                  }`}
-              >
-                Split
-              </Link>
-            </div>
-          </div>
-
           {/* Wallet Connect Button - Always visible */}
           <div className="flex items-center">
             {ready ? (
-              <button
-                onClick={handleWalletConnect}
-                className="flex items-center gap-2 px-4 py-1 rounded-xl font-semibold bg-accent text-background shadow-sm hover:bg-accent/80 transition-colors duration-150 text-sm md:text-base md:px-6 focus:outline-none focus:ring-2 focus:ring-accent/50 border border-accent/20 hover:border-accent"
-              >
-                {authenticated ? (
+              <div className="flex items-center gap-2">
+                {authenticated && user?.wallet?.address ? (
                   <>
-                    <span className="sm:inline tracking-wide">
-                      {user?.wallet?.address ? formatAddress(user.wallet.address) : "Connected"}
-                    </span>
+                    <button
+                      onClick={handleWalletConnect}
+                      className="flex items-center gap-2 px-4 py-1 rounded-xl font-semibold bg-accent text-background shadow-sm hover:bg-accent/80 transition-colors duration-150 text-sm md:text-base md:px-6 focus:outline-none focus:ring-2 focus:ring-accent/50 border border-accent/20 hover:border-accent"
+                    >
+                      <span className="sm:inline tracking-wide">
+                        {formatAddress(user.wallet.address)}
+                      </span>
+                    </button>
+                    <button
+                      onClick={handleCopyAddress}
+                      className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted hover:bg-muted/80 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-accent/50"
+                      title={copied ? "Copied!" : "Copy address"}
+                    >
+                      {copied ? (
+                        <Check className="w-4 h-4 text-foreground" />
+                      ) : (
+                        <Copy className="w-4 h-4 text-foreground" />
+                      )}
+                    </button>
                   </>
                 ) : (
-                  <>
+                  <button
+                    onClick={handleWalletConnect}
+                    className="flex items-center gap-2 px-4 py-1 rounded-xl font-semibold bg-accent text-background shadow-sm hover:bg-accent/80 transition-colors duration-150 text-sm md:text-base md:px-6 focus:outline-none focus:ring-2 focus:ring-accent/50 border border-accent/20 hover:border-accent"
+                  >
                     <Wallet className="w-5 h-5 color-foreground" />
                     <span className="hidden sm:inline tracking-wide">Connect Wallet</span>
-                  </>
+                  </button>
                 )}
-              </button>
+              </div>
             ) : (
               <div className="px-4 py-2 rounded-xl bg-muted/50 text-muted text-sm md:text-base animate-pulse">
                 Loading...
               </div>
             )}
           </div>
-
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="font-semibold bg-accent text-background transition-colors text-sm md:text-base md:px-6"
-            >
-              <MenuIcon className="h-6 w-6" />
-            </button>
-          </div>
         </div>
-
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-2 sm:px-3 border-t border-foreground/20">
-              <Link
-                href="/payroll"
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold shadow-sm transition-colors duration-150 text-base focus:outline-none focus:ring-2 focus:ring-accent/50 border ${isActive("/payroll")
-                    ? "bg-accent text-background border-accent"
-                    : "text-foreground hover:text-accent hover:bg-foreground/10 border-transparent hover:border-accent/20"
-                  }`}
-              >
-                Payroll
-              </Link>
-              <Link
-                href="/split"
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold shadow-sm transition-colors duration-150 text-base focus:outline-none focus:ring-2 focus:ring-accent/50 border ${isActive("/split")
-                    ? "bg-accent text-background border-accent"
-                    : "text-foreground hover:text-accent hover:bg-foreground/10 border-transparent hover:border-accent/20"
-                  }`}
-              >
-                Split
-              </Link>
-            </div>
-          </div>
-        )}
       </div>
     </nav>
   );
