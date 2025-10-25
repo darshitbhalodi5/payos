@@ -5,14 +5,13 @@ import { usePrivy } from '@privy-io/react-auth';
 import TokenChainSelector from './TokenChainSelector';
 import ContributorManager from './ContributorManager';
 import { useSplitContract } from '@/hooks/useSplitContract';
-import { 
-  DEFAULT_CHAIN_ID, 
-  DEFAULT_TOKEN, 
-  getTokenInfo, 
-  getChainInfo,
+import {
+  DEFAULT_CHAIN_ID,
+  DEFAULT_TOKEN,
+  getTokenInfo,
   validateTokenSelection,
-  validateChainSelection
 } from '@/lib/token-config';
+import { getChainInfo, validateChainSelection } from '@/lib/chain-config';
 
 interface SplitCreationFormProps {
   onSplitCreated: (splitId: string) => void;
@@ -97,7 +96,7 @@ export default function SplitCreationForm({ onSplitCreated, onClose, defaultReci
 
     try {
       clearError();
-      
+
       // Prepare contributor data
       const contributorAddresses = contributors.map(c => c.address);
       const contributorAmounts = contributors.map(c => c.amount.toString());
@@ -112,7 +111,7 @@ export default function SplitCreationForm({ onSplitCreated, onClose, defaultReci
         contributors: contributorAddresses,
         contributorAmounts: contributorAmounts
       });
-      
+
       onSplitCreated(splitId);
     } catch (error) {
       console.error('Failed to create split:', error);
@@ -130,10 +129,10 @@ export default function SplitCreationForm({ onSplitCreated, onClose, defaultReci
   const formatAmount = (amount: string, token: string) => {
     const tokenInfo = getTokenInfo(token);
     if (!tokenInfo || !amount) return '';
-    
+
     const numAmount = parseFloat(amount);
     if (isNaN(numAmount)) return '';
-    
+
     return `${numAmount.toLocaleString()} ${token}`;
   };
 
@@ -166,9 +165,8 @@ export default function SplitCreationForm({ onSplitCreated, onClose, defaultReci
               onChange={(e) => handleInputChange('recipient', e.target.value)}
               placeholder="0x..."
               required
-              className={`w-full px-3 py-2 bg-gray-700 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.recipient ? 'border-red-500' : 'border-gray-600'
-              }`}
+              className={`w-full px-3 py-2 bg-gray-700 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.recipient ? 'border-red-500' : 'border-gray-600'
+                }`}
             />
             {errors.recipient && (
               <p className="text-red-400 text-xs mt-1">{errors.recipient}</p>
@@ -201,9 +199,8 @@ export default function SplitCreationForm({ onSplitCreated, onClose, defaultReci
                 required
                 min="0.01"
                 step="0.01"
-                className={`w-full px-3 py-2 bg-gray-700 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.amount ? 'border-red-500' : 'border-gray-600'
-                }`}
+                className={`w-full px-3 py-2 bg-gray-700 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.amount ? 'border-red-500' : 'border-gray-600'
+                  }`}
               />
               <div className="absolute right-3 top-2 text-sm text-gray-400">
                 {formData.targetToken}
@@ -230,9 +227,8 @@ export default function SplitCreationForm({ onSplitCreated, onClose, defaultReci
               onChange={(e) => handleInputChange('description', e.target.value)}
               placeholder="e.g., Dinner at Joe's Restaurant"
               required
-              className={`w-full px-3 py-2 bg-gray-700 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.description ? 'border-red-500' : 'border-gray-600'
-              }`}
+              className={`w-full px-3 py-2 bg-gray-700 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.description ? 'border-red-500' : 'border-gray-600'
+                }`}
             />
             {errors.description && (
               <p className="text-red-400 text-xs mt-1">{errors.description}</p>

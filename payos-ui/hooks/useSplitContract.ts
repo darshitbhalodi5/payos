@@ -25,6 +25,7 @@ export interface SplitData {
   status: 'active' | 'completed';
   contributors: ContributorInfo[];
   contributions: ContributionInfo[];
+  createdAt?: string;
 }
 
 export interface ContributorInfo {
@@ -43,6 +44,7 @@ export interface ContributionInfo {
   targetAmount: string;
   txHash: string;
   timestamp: number;
+  status?: 'active' | 'completed';
 }
 
 export function useSplitContract() {
@@ -300,7 +302,6 @@ export function useSplitContract() {
             status: 'completed'
           }
         ],
-        createdAt: Date.now() - 4 * 60 * 60 * 1000
       };
 
       return mockSplitData;

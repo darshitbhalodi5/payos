@@ -1,15 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { 
-  SUPPORTED_CHAINS, 
-  getAvailableTokens, 
+import {
+  getAvailableTokens,
   validateTokenSelection,
-  validateChainSelection,
   getTokenInfo,
-  getChainInfo,
   type TokenInfo
 } from '@/lib/token-config';
+import { SUPPORTED_CHAINS, getChainInfo, validateChainSelection } from '@/lib/chain-config';
 
 interface TokenChainSelectorProps {
   selectedChainId: number;
@@ -35,11 +33,11 @@ export default function TokenChainSelector({
   useEffect(() => {
     const tokens = getAvailableTokens(selectedChainId);
     setAvailableTokens(tokens);
-    
+
     // Check if current token is still available on the new chain
     const isTokenValid = validateTokenSelection(selectedToken, selectedChainId);
     setIsValidSelection(isTokenValid);
-    
+
     // If current token is not available, select the first available token
     if (!isTokenValid && tokens.length > 0) {
       onTokenChange(tokens[0].symbol);
@@ -64,7 +62,7 @@ export default function TokenChainSelector({
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-medium text-white">{label}</h3>
-      
+
       {/* Chain Selection */}
       <div>
         <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -77,11 +75,10 @@ export default function TokenChainSelector({
               type="button"
               onClick={() => handleChainChange(chain.id)}
               disabled={disabled}
-              className={`p-3 rounded-lg border text-left transition-all ${
-                selectedChainId === chain.id
+              className={`p-3 rounded-lg border text-left transition-all ${selectedChainId === chain.id
                   ? 'border-blue-500 bg-blue-500/10 text-blue-400'
                   : 'border-gray-600 bg-gray-700 hover:border-gray-500 text-gray-300'
-              } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
             >
               <div className="font-medium">{chain.name}</div>
               <div className="text-xs text-gray-400">{chain.symbol}</div>
@@ -102,11 +99,10 @@ export default function TokenChainSelector({
               type="button"
               onClick={() => handleTokenChange(token.symbol)}
               disabled={disabled}
-              className={`p-3 rounded-lg border text-left transition-all ${
-                selectedToken === token.symbol
+              className={`p-3 rounded-lg border text-left transition-all ${selectedToken === token.symbol
                   ? 'border-blue-500 bg-blue-500/10 text-blue-400'
                   : 'border-gray-600 bg-gray-700 hover:border-gray-500 text-gray-300'
-              } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
             >
               <div className="font-medium">{token.symbol}</div>
               <div className="text-xs text-gray-400">{token.name}</div>
@@ -130,7 +126,7 @@ export default function TokenChainSelector({
             </div>
           )}
         </div>
-        
+
         {!isValidSelection && (
           <div className="text-xs text-red-400 mt-2">
             ⚠️ Selected token is not available on this chain

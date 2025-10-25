@@ -5,12 +5,11 @@ import { usePrivy } from '@privy-io/react-auth';
 import TokenChainSelector from './TokenChainSelector';
 import { useSplitContract } from '@/hooks/useSplitContract';
 import { useAvailNexus } from '@/hooks/useAvailNexus';
-import { 
-  SUPPORTED_CHAINS, 
-  getTokenInfo, 
+import {
+  getTokenInfo,
   validateTokenSelection,
-  validateChainSelection
 } from '@/lib/token-config';
+import { SUPPORTED_CHAINS, validateChainSelection } from '@/lib/chain-config';
 
 interface SplitData {
   id: string;
@@ -108,9 +107,9 @@ export default function SplitPaymentInterface({ splitId, onPaymentComplete }: Sp
             },
           ],
         };
-        
+
         setSplitData(mockData);
-        
+
         // TODO: Replace with actual contract call
         // const data = await getSplitData(splitId, 42161); // Assuming Arbitrum
         // setSplitData(data);
@@ -160,11 +159,11 @@ export default function SplitPaymentInterface({ splitId, onPaymentComplete }: Sp
     }
 
     setIsContributing(true);
-    
+
     try {
       // Calculate target amount (simplified - in production, use price feeds)
       const targetAmount = contributionAmount; // 1:1 for now
-      
+
       // Use the contract hook to contribute
       const txHash = await contributeToSplit({
         splitId: splitId,
@@ -175,9 +174,9 @@ export default function SplitPaymentInterface({ splitId, onPaymentComplete }: Sp
         targetToken: splitData.targetToken,
         targetAmount: targetAmount
       });
-      
+
       console.log('Contribution successful:', txHash);
-      
+
       // Update local state (in production, this would come from contract events)
       setSplitData(prev => {
         if (!prev) return prev;
@@ -199,7 +198,7 @@ export default function SplitPaymentInterface({ splitId, onPaymentComplete }: Sp
           ]
         };
       });
-      
+
       setContributionAmount('');
       onPaymentComplete();
     } catch (error) {
@@ -213,7 +212,7 @@ export default function SplitPaymentInterface({ splitId, onPaymentComplete }: Sp
   const formatAmount = (amount: string, token: string) => {
     const tokenInfo = getTokenInfo(token);
     if (!tokenInfo || !amount) return '';
-    
+
     const numAmount = parseInt(amount) / Math.pow(10, tokenInfo.decimals);
     return `${numAmount.toLocaleString()} ${token}`;
   };
@@ -260,15 +259,14 @@ export default function SplitPaymentInterface({ splitId, onPaymentComplete }: Sp
         <div className="bg-gray-800 rounded-lg p-6 mb-6 border border-gray-700">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold text-white">{splitData.description}</h1>
-            <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-              isCompleted 
-                ? 'bg-green-500/20 text-green-400' 
+            <div className={`px-3 py-1 rounded-full text-sm font-medium ${isCompleted
+                ? 'bg-green-500/20 text-green-400'
                 : 'bg-blue-500/20 text-blue-400'
-            }`}>
+              }`}>
               {isCompleted ? 'Completed' : 'Active'}
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div>
               <span className="text-gray-400">Recipient:</span>
@@ -298,7 +296,7 @@ export default function SplitPaymentInterface({ splitId, onPaymentComplete }: Sp
             </span>
           </div>
           <div className="w-full bg-gray-700 rounded-full h-3 mb-2">
-            <div 
+            <div
               className="bg-blue-500 h-3 rounded-full transition-all duration-300"
               style={{ width: `${progressPercentage}%` }}
             ></div>
@@ -312,7 +310,7 @@ export default function SplitPaymentInterface({ splitId, onPaymentComplete }: Sp
         {!isCompleted && (
           <div className="bg-gray-800 rounded-lg p-6 mb-6 border border-gray-700">
             <h2 className="text-lg font-semibold text-white mb-4">Make a Contribution</h2>
-            
+
             <div className="space-y-4">
               {/* Chain & Token Selection */}
               <TokenChainSelector
@@ -339,9 +337,8 @@ export default function SplitPaymentInterface({ splitId, onPaymentComplete }: Sp
                     placeholder="0.0"
                     min="0"
                     step="0.01"
-                    className={`w-full px-3 py-2 bg-gray-700 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.amount ? 'border-red-500' : 'border-gray-600'
-                    }`}
+                    className={`w-full px-3 py-2 bg-gray-700 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.amount ? 'border-red-500' : 'border-gray-600'
+                      }`}
                   />
                   <div className="absolute right-3 top-2 text-sm text-gray-400">
                     {selectedToken}
@@ -374,7 +371,7 @@ export default function SplitPaymentInterface({ splitId, onPaymentComplete }: Sp
         {/* Contributions History */}
         <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
           <h2 className="text-lg font-semibold text-white mb-4">Contributions</h2>
-          
+
           {splitData.contributions.length === 0 ? (
             <p className="text-gray-400 text-center py-8">No contributions yet</p>
           ) : (
@@ -396,10 +393,9 @@ export default function SplitPaymentInterface({ splitId, onPaymentComplete }: Sp
                     <div className="text-sm font-medium text-white">
                       {formatAmount(contribution.targetAmount, splitData.targetToken)}
                     </div>
-                    <div className={`text-xs ${
-                      contribution.status === 'completed' ? 'text-green-400' : 
-                      contribution.status === 'pending' ? 'text-yellow-400' : 'text-red-400'
-                    }`}>
+                    <div className={`text-xs ${contribution.status === 'completed' ? 'text-green-400' :
+                        contribution.status === 'pending' ? 'text-yellow-400' : 'text-red-400'
+                      }`}>
                       {contribution.status}
                     </div>
                   </div>
