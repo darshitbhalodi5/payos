@@ -68,7 +68,7 @@ export interface Contribution {
 // Avail Nexus SDK types
 export interface AvailNexusConfig {
   apiKey: string;
-  environment: 'testnet' | 'mainnet';
+  environment: 'testnet';
   supportedChains: number[];
   supportedTokens: string[];
 }

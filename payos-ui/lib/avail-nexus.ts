@@ -2,7 +2,7 @@
 
 export interface NexusConfig {
   apiKey: string;
-  environment: 'testnet' | 'mainnet';
+  environment: 'testnet';
   supportedChains: number[];
 }
 
@@ -210,8 +210,8 @@ export function createAvailNexusSDK(config: NexusConfig): AvailNexusSDK {
 // Default configuration
 export const DEFAULT_NEXUS_CONFIG: NexusConfig = {
   apiKey: process.env.NEXT_PUBLIC_AVAIL_NEXUS_API_KEY || '',
-  environment: process.env.NODE_ENV === 'production' ? 'mainnet' : 'testnet',
-  supportedChains: [1, 42161, 10, 8453, 137] // Ethereum, Arbitrum, Optimism, Base, Polygon
+  environment: 'testnet',
+  supportedChains: [11155111, 421614, 11155420, 84532, 80002] // Ethereum Sepolia, Arbitrum Sepolia, Optimism Sepolia, Base Sepolia, Polygon Amoy
 };
 
 // Export types

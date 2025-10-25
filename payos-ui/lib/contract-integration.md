@@ -42,11 +42,11 @@ Update the contract addresses in `lib/contracts.ts` with your deployed addresses
 
 ```typescript
 export const SPLIT_BILL_ADDRESSES: ContractAddresses = {
-  1: '0xYourEthereumAddress', // Ethereum
-  42161: '0xYourArbitrumAddress', // Arbitrum
-  10: '0xYourOptimismAddress', // Optimism
-  8453: '0xYourBaseAddress', // Base
-  137: '0xYourPolygonAddress', // Polygon
+  11155111: '0xYourEthereumSepoliaAddress', // Ethereum Sepolia
+  421614: '0xYourArbitrumSepoliaAddress', // Arbitrum Sepolia
+  11155420: '0xYourOptimismSepoliaAddress', // Optimism Sepolia
+  84532: '0xYourBaseSepoliaAddress', // Base Sepolia
+  80002: '0xYourPolygonAmoyAddress', // Polygon Amoy
 };
 ```
 
@@ -110,8 +110,8 @@ const { data: splitCreatedEvents } = useWatchContractEvent({
 2. Test cross-chain functionality
 3. Verify all features work
 
-### Mainnet Deployment
-1. Deploy to mainnet
+### Production Deployment
+1. Deploy to production testnet
 2. Update production addresses
 3. Monitor contract events
 

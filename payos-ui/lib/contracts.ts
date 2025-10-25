@@ -38,11 +38,11 @@ export function getContractConfig(chainId: number): ContractConfig {
 // Helper function to get chain name
 export function getChainName(chainId: number): string {
   const chainNames: { [key: number]: string } = {
-    1: 'Ethereum',
-    42161: 'Arbitrum',
-    10: 'Optimism',
-    8453: 'Base',
-    137: 'Polygon'
+    11155111: 'Ethereum Sepolia',
+    421614: 'Arbitrum Sepolia',
+    11155420: 'Optimism Sepolia',
+    84532: 'Base Sepolia',
+    80002: 'Polygon Amoy'
   };
   return chainNames[chainId] || 'Unknown';
 }
@@ -50,11 +50,11 @@ export function getChainName(chainId: number): string {
 // Helper function to get block explorer URL
 export function getBlockExplorer(chainId: number): string {
   const explorers: { [key: number]: string } = {
-    1: 'https://etherscan.io',
-    42161: 'https://arbiscan.io',
-    10: 'https://optimistic.etherscan.io',
-    8453: 'https://basescan.org',
-    137: 'https://polygonscan.com'
+    11155111: 'https://sepolia.etherscan.io',
+    421614: 'https://sepolia.arbiscan.io',
+    11155420: 'https://sepolia-optimism.etherscan.io',
+    84532: 'https://sepolia.basescan.org',
+    80002: 'https://amoy.polygonscan.com'
   };
   return explorers[chainId] || '';
 }

@@ -9,11 +9,11 @@ interface SplitListProps {
 }
 
 const SUPPORTED_CHAINS = [
-  { id: 1, name: 'Ethereum', symbol: 'ETH' },
-  { id: 137, name: 'Polygon', symbol: 'MATIC' },
-  { id: 42161, name: 'Arbitrum', symbol: 'ARB' },
-  { id: 10, name: 'Optimism', symbol: 'OP' },
-  { id: 8453, name: 'Base', symbol: 'BASE' },
+  { id: 11155111, name: 'Ethereum Sepolia', symbol: 'ETH' },
+  { id: 80002, name: 'Polygon Amoy', symbol: 'POL' },
+  { id: 421614, name: 'Arbitrum Sepolia', symbol: 'ARB' },
+  { id: 11155420, name: 'Optimism Sepolia', symbol: 'OP' },
+  { id: 84532, name: 'Base Sepolia', symbol: 'BASE' },
 ];
 
 const SUPPORTED_TOKENS = [

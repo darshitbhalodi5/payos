@@ -296,7 +296,7 @@ export class AvailNexusHelper {
 export const DEFAULT_AVAIL_CONFIG: AvailNexusConfig = {
   apiKey: process.env.NEXT_PUBLIC_AVAIL_NEXUS_API_KEY || '',
   environment: 'testnet',
-  supportedChains: [1, 137, 42161, 10, 8453],
+  supportedChains: [11155111, 80002, 421614, 11155420, 84532], // Ethereum Sepolia, Polygon Amoy, Arbitrum Sepolia, Optimism Sepolia, Base Sepolia
   supportedTokens: ['ETH', 'USDC', 'USDT', 'PYUSD']
 };
 

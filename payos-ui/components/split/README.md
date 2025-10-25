@@ -39,11 +39,11 @@ This directory contains the frontend components for the PayOS split functionalit
 - **Refund System**: Claim refunds for cancelled or expired splits
 
 ### Supported Chains
-- Ethereum (1)
-- Polygon (137)
-- Arbitrum (42161)
-- Optimism (10)
-- Base (8453)
+- Ethereum Sepolia (11155111)
+- Polygon Amoy (80002)
+- Arbitrum Sepolia (421614)
+- Optimism Sepolia (11155420)
+- Base Sepolia (84532)
 
 ### Supported Tokens
 - PYUSD (PayPal USD)
@@ -60,9 +60,9 @@ The split functionality leverages Avail Nexus SDK for seamless cross-chain opera
 await sdk.bridgeAndExecute({
   token: 'ETH',
   amount: '2.5',
-  sourceChains: [1], // Ethereum
+  sourceChains: [11155111], // Ethereum Sepolia
   
-  toChainId: 42161, // Arbitrum
+  toChainId: 421614, // Arbitrum Sepolia
   recipient: SPLIT_CONTRACT_ADDRESS,
   
   execute: {
@@ -115,7 +115,7 @@ The frontend integrates with the `PayosSplitBill.sol` smart contract:
 ## Next Steps
 
 1. **Real Avail SDK Integration**: Replace mock implementation with actual SDK
-2. **Contract Deployment**: Deploy smart contracts to testnet/mainnet
+2. **Contract Deployment**: Deploy smart contracts to testnet
 3. **Price Feed Integration**: Add real-time token conversion rates
 4. **Enhanced UX**: Add animations, better error handling, and notifications
 5. **Mobile Optimization**: Further mobile-specific improvements

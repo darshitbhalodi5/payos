@@ -126,11 +126,11 @@ export default function AvailNexusIntegration({
 
   const getChainName = (chainId: number) => {
     const chains: { [key: number]: string } = {
-      1: 'Ethereum',
-      137: 'Polygon',
-      42161: 'Arbitrum',
-      10: 'Optimism',
-      8453: 'Base',
+      11155111: 'Ethereum Sepolia',
+      80002: 'Polygon Amoy',
+      421614: 'Arbitrum Sepolia',
+      11155420: 'Optimism Sepolia',
+      84532: 'Base Sepolia',
     };
     return chains[chainId] || `Chain ${chainId}`;
   };
