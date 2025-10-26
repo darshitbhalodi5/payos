@@ -65,36 +65,6 @@ export interface Contribution {
   timestamp: number;
 }
 
-// Avail Nexus SDK types
-export interface AvailNexusConfig {
-  apiKey: string;
-  environment: 'testnet';
-  supportedChains: number[];
-  supportedTokens: string[];
-}
-
-export interface BridgeAndExecuteParams {
-  splitId: string;
-  contributor: string;
-  sourceToken: string;
-  sourceAmount: string;
-  sourceChainId: number;
-  targetToken: string;
-  targetAmount: string;
-  targetChainId: number;
-  contractAddress: string;
-  contractAbi: unknown[];
-}
-
-export interface BridgeResult {
-  success: boolean;
-  transactionHash?: string;
-  status: 'pending' | 'completed' | 'failed';
-  estimatedTime?: number;
-  gasUsed?: string;
-  gasPrice?: string;
-  error?: string;
-}
 
 // Chain and token configuration types
 export interface ChainInfo {
@@ -224,23 +194,3 @@ export interface SplitFilters {
   chainId?: number;
 }
 
-export interface UseAvailNexusReturn {
-  sdk: unknown;
-  isInitialized: boolean;
-  isLoading: boolean;
-  error: string | null;
-  bridgeAndExecute: (params: BridgeAndExecuteParams) => Promise<BridgeResult>;
-  getTokenBalance: (token: string, address: string, chainId: number) => Promise<string>;
-  getSupportedTokens: (chainId: number) => Promise<TokenInfo[]>;
-  estimateGas: (params: BridgeAndExecuteParams) => Promise<{
-    gasLimit: string;
-    gasPrice: string;
-    estimatedCost: string;
-  }>;
-  getTransactionStatus: (txHash: string) => Promise<{
-    status: 'pending' | 'completed' | 'failed';
-    confirmations: number;
-    blockNumber?: number;
-  }>;
-  clearError: () => void;
-}

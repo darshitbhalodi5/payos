@@ -31,10 +31,10 @@ export default function Home() {
             </p>
           </div>
           <div className="text-center p-6 rounded-lg border" style={{ backgroundColor: 'var(--background)', borderColor: 'var(--accent)' }}>
-            <div className="text-4xl mb-4">🚀</div>
-            <h3 className="text-xl font-semibold mb-3" style={{ color: 'var(--foreground)' }}>Avail Nexus SDK</h3>
+            <div className="text-4xl mb-4">⚡</div>
+            <h3 className="text-xl font-semibold mb-3" style={{ color: 'var(--foreground)' }}>Fast & Secure</h3>
             <p style={{ color: 'var(--muted)' }}>
-              Seamless cross-chain bridging and automatic token conversion
+              Lightning-fast transactions with enterprise-grade security
             </p>
           </div>
           <div className="text-center p-6 rounded-lg border" style={{ backgroundColor: 'var(--background)', borderColor: 'var(--accent)' }}>

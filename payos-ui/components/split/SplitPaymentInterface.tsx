@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import TokenChainSelector from './TokenChainSelector';
 import { useSplitContract } from '@/hooks/useSplitContract';
-import { useAvailNexus } from '@/hooks/useAvailNexus';
 import {
   getTokenInfo,
   validateTokenSelection,
@@ -43,7 +42,6 @@ interface SplitPaymentInterfaceProps {
 export default function SplitPaymentInterface({ splitId, onPaymentComplete }: SplitPaymentInterfaceProps) {
   const { user } = usePrivy();
   const { contributeToSplit, error: contractError } = useSplitContract();
-  const { isInitialized: nexusInitialized, error: nexusError } = useAvailNexus();
   const [splitData, setSplitData] = useState<SplitData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedChainId, setSelectedChainId] = useState(1); // Ethereum default
@@ -153,10 +151,7 @@ export default function SplitPaymentInterface({ splitId, onPaymentComplete }: Sp
       return;
     }
 
-    if (!nexusInitialized) {
-      alert('Avail Nexus SDK not initialized. Please try again.');
-      return;
-    }
+    // Validation passed, proceed with contribution
 
     setIsContributing(true);
 
@@ -350,16 +345,16 @@ export default function SplitPaymentInterface({ splitId, onPaymentComplete }: Sp
               </div>
 
               {/* Error Display */}
-              {(contractError || nexusError) && (
+              {contractError && (
                 <div className="bg-red-500/10 border border-red-500 rounded-lg p-3">
-                  <p className="text-red-400 text-sm">{contractError || nexusError}</p>
+                  <p className="text-red-400 text-sm">{contractError}</p>
                 </div>
               )}
 
               {/* Contribution Button */}
               <button
                 onClick={handleContribution}
-                disabled={isContributing || !contributionAmount || !nexusInitialized}
+                disabled={isContributing || !contributionAmount}
                 className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isContributing ? 'Processing...' : 'Contribute'}
