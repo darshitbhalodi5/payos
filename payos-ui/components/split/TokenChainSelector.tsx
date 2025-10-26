@@ -66,14 +66,12 @@ export default function TokenChainSelector({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-medium text-white">{label}</h3>
-
       {/* Chain Selection */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-sm font-medium text-white mb-2">
           Chain
         </label>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {SUPPORTED_CHAINS.map((chain) => (
             <button
               key={chain.id}
@@ -94,10 +92,10 @@ export default function TokenChainSelector({
 
       {/* Token Selection */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-sm font-medium text-white mb-2">
           Token
         </label>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           {availableTokens.map((token) => (
             <button
               key={token.symbol}
@@ -117,7 +115,7 @@ export default function TokenChainSelector({
       </div>
 
       {/* Selection Summary */}
-      <div className="bg-gray-700 rounded-lg p-3 border border-gray-600">
+      <div className="bg-white/5 rounded-lg p-3 border border-gray-600">
         <div className="text-sm text-gray-300">
           <div className="flex items-center justify-between">
             <span>Selected:</span>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface Contributor {
   address: string;
@@ -25,26 +25,12 @@ export default function ContributorManager({
 }: ContributorManagerProps) {
   const [newContributor, setNewContributor] = useState('');
   const [newAmount, setNewAmount] = useState('');
-  const [distributionMode, setDistributionMode] = useState<'equal' | 'custom'>('equal');
 
   const maxContributors = 10;
 
   // Calculate total contributed amount
   const totalContributed = contributors.reduce((sum, c) => sum + c.amount, 0);
   const remainingAmount = totalAmount - totalContributed;
-
-  // Auto-distribute equally when in equal mode
-  useEffect(() => {
-    if (distributionMode === 'equal' && contributors.length > 0) {
-      const equalAmount = totalAmount / contributors.length;
-      const updatedContributors = contributors.map(contributor => ({
-        ...contributor,
-        amount: equalAmount,
-        percentage: (equalAmount / totalAmount) * 100
-      }));
-      onContributorsChange(updatedContributors);
-    }
-  }, [distributionMode, contributors.length, totalAmount, onContributorsChange, contributors]);
 
   const addContributor = () => {
     if (!newContributor.trim() || contributors.length >= maxContributors) return;
@@ -63,9 +49,19 @@ export default function ContributorManager({
       return;
     }
 
-    const amount = distributionMode === 'equal' 
-      ? totalAmount / (contributors.length + 1)
-      : parseFloat(newAmount) || 0;
+    // Validate amount
+    const amount = parseFloat(newAmount);
+    if (!newAmount || isNaN(amount) || amount <= 0) {
+      alert('Please enter a valid amount');
+      return;
+    }
+
+    // Check if total would exceed the total amount
+    const newTotal = totalContributed + amount;
+    if (newTotal > totalAmount) {
+      alert(`Amount exceeds the remaining allocation. Remaining: ${formatAmount(totalAmount - totalContributed)}`);
+      return;
+    }
 
     const newContributors = [
       ...contributors,
@@ -86,13 +82,24 @@ export default function ContributorManager({
     onContributorsChange(newContributors);
   };
 
-  const updateContributorAmount = (index: number, amount: number) => {
+  const updateContributorAmount = (index: number, newAmount: number) => {
+    // Check if the new total would exceed the total amount
+    const otherContributorsTotal = contributors.reduce((sum, c, i) => {
+      return i === index ? sum : sum + c.amount;
+    }, 0);
+    
+    const newTotal = otherContributorsTotal + newAmount;
+    if (newTotal > totalAmount) {
+      alert(`Amount exceeds the allowed total. Maximum: ${formatAmount(totalAmount - otherContributorsTotal)}`);
+      return;
+    }
+
     const updatedContributors = contributors.map((contributor, i) => 
       i === index 
         ? {
             ...contributor,
-            amount,
-            percentage: (amount / totalAmount) * 100
+            amount: newAmount,
+            percentage: (newAmount / totalAmount) * 100
           }
         : contributor
     );
@@ -115,40 +122,9 @@ export default function ContributorManager({
         </div>
       </div>
 
-      {/* Distribution Mode */}
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          Distribution Mode
-        </label>
-        <div className="flex space-x-4">
-          <label className="flex items-center">
-            <input
-              type="radio"
-              value="equal"
-              checked={distributionMode === 'equal'}
-              onChange={(e) => setDistributionMode(e.target.value as 'equal' | 'custom')}
-              disabled={disabled}
-              className="mr-2"
-            />
-            <span className="text-gray-300">Equal Split</span>
-          </label>
-          <label className="flex items-center">
-            <input
-              type="radio"
-              value="custom"
-              checked={distributionMode === 'custom'}
-              onChange={(e) => setDistributionMode(e.target.value as 'equal' | 'custom')}
-              disabled={disabled}
-              className="mr-2"
-            />
-            <span className="text-gray-300">Custom Amounts</span>
-          </label>
-        </div>
-      </div>
-
       {/* Add Contributor */}
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-300">
+        <label className="block text-sm font-medium text-white">
           Add Contributor
         </label>
         <div className="flex space-x-2">
@@ -158,25 +134,23 @@ export default function ContributorManager({
             onChange={(e) => setNewContributor(e.target.value)}
             placeholder="0x..."
             disabled={disabled || contributors.length >= maxContributors}
-            className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            className="flex-1 px-4 py-3 bg-white/5 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 disabled:opacity-50"
           />
-          {distributionMode === 'custom' && (
-            <input
-              type="number"
-              value={newAmount}
-              onChange={(e) => setNewAmount(e.target.value)}
-              placeholder="Amount"
-              min="0"
-              step="0.01"
-              disabled={disabled || contributors.length >= maxContributors}
-              className="w-32 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-            />
-          )}
+          <input
+            type="number"
+            value={newAmount}
+            onChange={(e) => setNewAmount(e.target.value)}
+            placeholder="Amount"
+            min="0"
+            step="0.01"
+            disabled={disabled || contributors.length >= maxContributors}
+            className="w-32 px-4 py-3 bg-white/5 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 disabled:opacity-50"
+          />
           <button
             type="button"
             onClick={addContributor}
-            disabled={disabled || !newContributor.trim() || contributors.length >= maxContributors}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            disabled={disabled || !newContributor.trim() || !newAmount || contributors.length >= maxContributors}
+            className="px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
           >
             Add
           </button>
@@ -186,33 +160,31 @@ export default function ContributorManager({
       {/* Contributors List */}
       <div className="space-y-2">
         {contributors.map((contributor, index) => (
-          <div key={index} className="flex items-center space-x-2 p-3 bg-gray-700 rounded-lg border border-gray-600">
+          <div key={index} className="flex items-center space-x-2 p-3 bg-white/5 rounded-lg border border-gray-600">
             <div className="flex-1">
               <div className="text-sm font-medium text-white">
                 {contributor.address.slice(0, 6)}...{contributor.address.slice(-4)}
               </div>
-              <div className="text-xs text-gray-400">
+              <div className="text-xs text-gray-300">
                 {contributor.percentage.toFixed(1)}% • {formatAmount(contributor.amount)}
               </div>
             </div>
             
-            {distributionMode === 'custom' && (
-              <input
-                type="number"
-                value={contributor.amount}
-                onChange={(e) => updateContributorAmount(index, parseFloat(e.target.value) || 0)}
-                min="0"
-                step="0.01"
-                disabled={disabled}
-                className="w-24 px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-            )}
+            <input
+              type="number"
+              value={contributor.amount}
+              onChange={(e) => updateContributorAmount(index, parseFloat(e.target.value) || 0)}
+              min="0"
+              step="0.01"
+              disabled={disabled}
+              className="w-24 px-3 py-2 bg-white/10 border border-gray-500 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+            />
             
             <button
               type="button"
               onClick={() => removeContributor(index)}
               disabled={disabled}
-              className="text-red-400 hover:text-red-300 disabled:opacity-50"
+              className="text-red-400 hover:text-red-300 disabled:opacity-50 px-3 py-2 rounded-lg hover:bg-red-900/20 transition-colors"
             >
               ×
             </button>
@@ -221,7 +193,7 @@ export default function ContributorManager({
       </div>
 
       {/* Summary */}
-      <div className="bg-gray-700 rounded-lg p-3 border border-gray-600">
+      <div className="bg-white/5 rounded-lg p-4 border border-gray-600">
         <div className="text-sm text-gray-300 space-y-1">
           <div className="flex justify-between">
             <span>Total Amount:</span>
@@ -233,21 +205,21 @@ export default function ContributorManager({
           </div>
           <div className="flex justify-between">
             <span>Remaining:</span>
-            <span className={`font-medium ${remainingAmount > 0 ? 'text-yellow-400' : 'text-green-400'}`}>
-              {formatAmount(remainingAmount)}
+            <span className={`font-medium ${remainingAmount > 0 ? 'text-yellow-400' : remainingAmount < 0 ? 'text-red-400' : 'text-green-400'}`}>
+              {remainingAmount < 0 ? '-' : ''}{formatAmount(Math.abs(remainingAmount))}
             </span>
           </div>
         </div>
         
         {remainingAmount > 0 && (
-          <div className="text-xs text-yellow-400 mt-2">
-            ⚠️ {formatAmount(remainingAmount)} still needs to be allocated
+          <div className="text-xs mt-2" style={{ color: 'var(--yellow)' }}>
+            {formatAmount(remainingAmount)} still needs to be allocated
           </div>
         )}
         
-        {Math.abs(remainingAmount) < 0.01 && contributors.length > 0 && (
-          <div className="text-xs text-green-400 mt-2">
-            ✅ All amounts allocated correctly
+        {remainingAmount < 0 && (
+          <div className="text-xs mt-2 text-red-400">
+          Over allocated by {formatAmount(Math.abs(remainingAmount))}. Please reduce contributor amounts.
           </div>
         )}
       </div>

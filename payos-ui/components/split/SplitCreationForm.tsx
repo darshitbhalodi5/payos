@@ -141,22 +141,17 @@ export default function SplitCreationForm({ onSplitCreated, onClose, defaultReci
   const selectedToken = getTokenInfo(formData.targetToken);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
-      <div className="bg-gray-800 rounded-lg p-6 w-full max-w-4xl mx-4 my-8 border border-gray-700">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-white">Create Bill Split</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white text-2xl"
-          >
-            ×
-          </button>
+    <div className="min-h-screen flex items-center justify-center py-12" style={{ backgroundColor: 'var(--background)' }}>
+      <div className="max-w-4xl w-full mx-4">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-2 text-white">Create Bill Split</h1>
+          <p className="text-gray-400">Split expenses with friends across any supported chain</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Recipient Address */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-white mb-2">
               Recipient Address
             </label>
             <input
@@ -165,7 +160,7 @@ export default function SplitCreationForm({ onSplitCreated, onClose, defaultReci
               onChange={(e) => handleInputChange('recipient', e.target.value)}
               placeholder="0x..."
               required
-              className={`w-full px-3 py-2 bg-gray-700 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.recipient ? 'border-red-500' : 'border-gray-600'
+              className={`w-full px-4 py-3 bg-white/5 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 border-gray-600 ${errors.recipient ? 'border-red-500' : ''
                 }`}
             />
             {errors.recipient && (
@@ -174,20 +169,25 @@ export default function SplitCreationForm({ onSplitCreated, onClose, defaultReci
           </div>
 
           {/* Chain & Token Selection */}
-          <TokenChainSelector
-            selectedChainId={formData.targetChainId}
-            selectedToken={formData.targetToken}
-            onChainChange={(chainId) => handleInputChange('targetChainId', chainId)}
-            onTokenChange={(token) => handleInputChange('targetToken', token)}
-            label="Payment Chain & Token"
-          />
+          <div>
+            <h3 className="text-lg font-medium text-white mb-4">Payment Chain & Token</h3>
+            <div className="bg-white/5 rounded-lg p-6 border border-gray-600">
+              <TokenChainSelector
+                selectedChainId={formData.targetChainId}
+                selectedToken={formData.targetToken}
+                onChainChange={(chainId) => handleInputChange('targetChainId', chainId)}
+                onTokenChange={(token) => handleInputChange('targetToken', token)}
+                label=""
+              />
+            </div>
+          </div>
           {(errors.chain || errors.token) && (
             <p className="text-red-400 text-xs">{errors.chain || errors.token}</p>
           )}
 
           {/* Target Amount */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+          <div className="bg-white/5 rounded-lg p-6 border border-gray-600">
+            <label className="block text-sm font-medium text-white mb-2">
               Total Amount
             </label>
             <div className="relative">
@@ -199,7 +199,7 @@ export default function SplitCreationForm({ onSplitCreated, onClose, defaultReci
                 required
                 min="0.01"
                 step="0.01"
-                className={`w-full px-3 py-2 bg-gray-700 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.amount ? 'border-red-500' : 'border-gray-600'
+                className={`w-full px-4 py-3 bg-white/5 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 border-gray-600 ${errors.amount ? 'border-red-500' : ''
                   }`}
               />
               <div className="absolute right-3 top-2 text-sm text-gray-400">
@@ -217,17 +217,17 @@ export default function SplitCreationForm({ onSplitCreated, onClose, defaultReci
           </div>
 
           {/* Description */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+          <div className="bg-white/5 rounded-lg p-6 border border-gray-600">
+            <label className="block text-sm font-medium text-white mb-2">
               Description
             </label>
             <input
               type="text"
               value={formData.description}
               onChange={(e) => handleInputChange('description', e.target.value)}
-              placeholder="e.g., Dinner at Joe's Restaurant"
+              placeholder="e.g., Restaurant bill"
               required
-              className={`w-full px-3 py-2 bg-gray-700 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.description ? 'border-red-500' : 'border-gray-600'
+              className={`w-full px-4 py-3 bg-white/5 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 border-gray-600 ${errors.description ? 'border-red-500' : ''
                 }`}
             />
             {errors.description && (
@@ -237,28 +237,18 @@ export default function SplitCreationForm({ onSplitCreated, onClose, defaultReci
 
           {/* Contributors */}
           {totalAmount > 0 && (
-            <ContributorManager
-              totalAmount={totalAmount}
-              tokenSymbol={formData.targetToken}
-              contributors={contributors}
-              onContributorsChange={setContributors}
-            />
+            <div className="bg-white/5 rounded-lg p-6 border border-gray-600">
+              <ContributorManager
+                totalAmount={totalAmount}
+                tokenSymbol={formData.targetToken}
+                contributors={contributors}
+                onContributorsChange={setContributors}
+              />
+            </div>
           )}
           {errors.contributors && (
             <p className="text-red-400 text-xs">{errors.contributors}</p>
           )}
-
-          {/* Preview */}
-          <div className="bg-gray-700 rounded-lg p-4 border border-gray-600">
-            <h3 className="text-sm font-medium text-gray-300 mb-2">Split Preview</h3>
-            <div className="space-y-1 text-sm text-gray-400">
-              <div>Recipient: {formData.recipient ? `${formData.recipient.slice(0, 6)}...${formData.recipient.slice(-4)}` : 'Not set'}</div>
-              <div>Chain: {selectedChain?.name || 'Not set'}</div>
-              <div>Token: {selectedToken?.symbol || 'Not set'}</div>
-              <div>Amount: {formData.targetAmount ? formatAmount(formData.targetAmount, formData.targetToken) : 'Not set'}</div>
-              <div>Contributors: {contributors.length}</div>
-            </div>
-          </div>
 
           {/* Error Display */}
           {error && (
@@ -268,18 +258,18 @@ export default function SplitCreationForm({ onSplitCreated, onClose, defaultReci
           )}
 
           {/* Action Buttons */}
-          <div className="flex space-x-3 pt-4">
+          <div className="flex space-x-3 pt-6">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 text-gray-300 border border-gray-600 rounded-lg hover:bg-gray-700 transition-colors"
+              className="flex-1 px-6 py-3 text-white border border-gray-600 rounded-lg hover:bg-white/10 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading || contributors.length === 0}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
             >
               {isLoading ? 'Creating...' : 'Create Split'}
             </button>
