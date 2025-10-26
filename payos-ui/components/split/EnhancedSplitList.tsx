@@ -19,6 +19,7 @@ const SUPPORTED_CHAINS = [
 ];
 
 const SUPPORTED_TOKENS = [
+  { symbol: 'ETH', name: 'Ether', decimals: 18 },
   { symbol: 'PYUSD', name: 'PayPal USD', decimals: 6 },
   { symbol: 'USDC', name: 'USD Coin', decimals: 6 },
 ];
@@ -28,7 +29,7 @@ type FilterType = 'all' | 'active' | 'completed' | 'my-created' | 'my-received';
 // Get filters based on filter type
 const getFiltersForType = (filterType: FilterType, address?: string) => {
   if (!address) return {};
-  
+
   switch (filterType) {
     case 'active':
       return { status: 'active' as const };
@@ -45,17 +46,17 @@ const getFiltersForType = (filterType: FilterType, address?: string) => {
 
 export default function EnhancedSplitList({ onSplitSelect, onCreateSplit, onContribute }: EnhancedSplitListProps) {
   const { address } = useAccount();
-  const { 
-    splits, 
-    isLoading, 
-    error, 
+  const {
+    splits,
+    isLoading,
+    error,
     pagination,
     fetchSplitsWithPagination,
     setCurrentPage,
     setCurrentLimit,
     setCurrentFilters
   } = useSplitsData();
-  
+
   const [filter, setFilter] = useState<FilterType>('all');
   const [showFilters, setShowFilters] = useState(false);
   const [pageSize, setPageSize] = useState(10);
@@ -78,18 +79,25 @@ export default function EnhancedSplitList({ onSplitSelect, onCreateSplit, onCont
   // Check if user can contribute to a split
   const canContribute = (split: { contributors: string[] }) => {
     if (!address) return false;
-    return split.contributors.some((contributor: string) => 
+    return split.contributors.some((contributor: string) =>
       contributor.toLowerCase() === address.toLowerCase()
     );
   };
 
   // Format amount
   const formatAmount = (amount: string, token: string) => {
+    if (!amount || amount === '0' || amount === '') return '0';
+
     const tokenInfo = SUPPORTED_TOKENS.find(t => t.symbol === token);
-    if (!tokenInfo || !amount) return '';
-    
-    const numAmount = parseFloat(amount) / Math.pow(10, tokenInfo.decimals);
-    return `${numAmount.toLocaleString()} ${token}`;
+    if (!tokenInfo) return amount; // Return raw amount if token not found
+
+    try {
+      const numAmount = parseFloat(amount) / Math.pow(10, tokenInfo.decimals);
+      if (isNaN(numAmount)) return '0';
+      return `${numAmount.toLocaleString()} ${token}`;
+    } catch {
+      return amount;
+    }
   };
 
   // Get chain name
@@ -141,11 +149,11 @@ export default function EnhancedSplitList({ onSplitSelect, onCreateSplit, onCont
         <button
           key={i}
           onClick={() => handlePageChange(i)}
-          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-            i === pagination.page
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-          }`}
+          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${i === pagination.page
+            ? 'text-white'
+            : 'text-gray-300 hover:text-white'
+            }`}
+          style={i === pagination.page ? { backgroundColor: 'var(--accent)' } : { backgroundColor: 'transparent' }}
         >
           {i}
         </button>
@@ -155,28 +163,30 @@ export default function EnhancedSplitList({ onSplitSelect, onCreateSplit, onCont
     return (
       <div className="flex items-center justify-between mt-6">
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-400">
+          <span className="text-sm" style={{ color: 'var(--muted)' }}>
             Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.totalCount)} of {pagination.totalCount} splits
           </span>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <button
             onClick={() => handlePageChange(pagination.page - 1)}
             disabled={!pagination.hasPrevPage}
-            className="p-2 rounded-lg bg-gray-700 text-gray-300 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-2 rounded-lg text-white hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            style={{ backgroundColor: 'var(--background)' }}
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
-          
+
           <div className="flex gap-1">
             {pages}
           </div>
-          
+
           <button
             onClick={() => handlePageChange(pagination.page + 1)}
             disabled={!pagination.hasNextPage}
-            className="p-2 rounded-lg bg-gray-700 text-gray-300 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-2 rounded-lg text-white hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            style={{ backgroundColor: 'var(--background)' }}
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -204,16 +214,17 @@ export default function EnhancedSplitList({ onSplitSelect, onCreateSplit, onCont
 
     return (
       <div className="text-center py-12">
-        <div className="w-24 h-24 bg-gray-800 rounded-full mx-auto mb-6 flex items-center justify-center">
-          <DollarSign className="w-12 h-12 text-gray-400" />
+        <div className="w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center" style={{ backgroundColor: 'var(--background)', border: '2px solid var(--accent)' }}>
+          <DollarSign className="w-12 h-12" style={{ color: 'var(--accent)' }} />
         </div>
-        <h3 className="text-xl font-semibold text-white mb-2">{getEmptyMessage()}</h3>
-        <p className="text-gray-400 mb-6">
+        <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--foreground)' }}>{getEmptyMessage()}</h3>
+        <p className="mb-6" style={{ color: 'var(--muted)' }}>
           {filter === 'all' ? 'Create your first split to get started' : 'Try changing the filter or create a new split'}
         </p>
         <button
           onClick={onCreateSplit}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="inline-flex items-center gap-2 px-6 py-3 text-white rounded-lg hover:opacity-90 transition-opacity font-medium"
+          style={{ backgroundColor: 'var(--accent)' }}
         >
           <Plus className="w-5 h-5" />
           Create New Split
@@ -226,16 +237,16 @@ export default function EnhancedSplitList({ onSplitSelect, onCreateSplit, onCont
     return (
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-white">Splits</h1>
-          <div className="h-10 w-32 bg-gray-700 rounded-lg animate-pulse" />
+          <h1 className="text-3xl font-bold" style={{ color: 'var(--foreground)' }}>Splits</h1>
+          <div className="h-10 w-32 rounded-lg animate-pulse" style={{ backgroundColor: 'var(--background)' }} />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="bg-gray-800 rounded-lg p-6 animate-pulse">
-              <div className="h-6 bg-gray-700 rounded mb-4" />
-              <div className="h-4 bg-gray-700 rounded mb-2" />
-              <div className="h-4 bg-gray-700 rounded mb-4" />
-              <div className="h-2 bg-gray-700 rounded" />
+            <div key={i} className="rounded-lg p-6 animate-pulse" style={{ backgroundColor: 'var(--background)', border: '1px solid var(--accent)' }}>
+              <div className="h-6 rounded mb-4" style={{ backgroundColor: 'var(--background)' }} />
+              <div className="h-4 rounded mb-2" style={{ backgroundColor: 'var(--background)' }} />
+              <div className="h-4 rounded mb-4" style={{ backgroundColor: 'var(--background)' }} />
+              <div className="h-2 rounded" style={{ backgroundColor: 'var(--background)' }} />
             </div>
           ))}
         </div>
@@ -246,14 +257,15 @@ export default function EnhancedSplitList({ onSplitSelect, onCreateSplit, onCont
   if (error) {
     return (
       <div className="text-center py-12">
-        <div className="w-24 h-24 bg-red-900/20 rounded-full mx-auto mb-6 flex items-center justify-center">
+        <div className="w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center" style={{ backgroundColor: 'var(--background)', border: '2px solid #ef4444' }}>
           <X className="w-12 h-12 text-red-400" />
         </div>
-        <h3 className="text-xl font-semibold text-white mb-2">Error Loading Splits</h3>
-        <p className="text-gray-400 mb-6">{error}</p>
+        <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--foreground)' }}>Error Loading Splits</h3>
+        <p className="mb-6" style={{ color: 'var(--muted)' }}>{error}</p>
         <button
           onClick={() => window.location.reload()}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="px-6 py-3 text-white rounded-lg hover:opacity-90 transition-opacity font-medium"
+          style={{ backgroundColor: 'var(--accent)' }}
         >
           Try Again
         </button>
@@ -265,18 +277,20 @@ export default function EnhancedSplitList({ onSplitSelect, onCreateSplit, onCont
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-3xl font-bold text-white">Splits</h1>
+        <h1 className="text-3xl font-bold" style={{ color: 'var(--foreground)' }}>Splits</h1>
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:opacity-80 transition-opacity"
+            style={{ backgroundColor: 'var(--background)', border: '1px solid var(--accent)' }}
           >
             <Filter className="w-4 h-4" />
             Filters
           </button>
           <button
             onClick={onCreateSplit}
-            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 px-6 py-3 text-white rounded-lg hover:opacity-90 transition-opacity font-medium"
+            style={{ backgroundColor: 'var(--accent)' }}
           >
             <Plus className="w-5 h-5" />
             Create Split
@@ -286,7 +300,7 @@ export default function EnhancedSplitList({ onSplitSelect, onCreateSplit, onCont
 
       {/* Filters */}
       {showFilters && (
-        <div className="bg-gray-800 rounded-lg p-4 space-y-4">
+        <div className="rounded-lg p-4 space-y-4" style={{ backgroundColor: 'var(--background)', border: '1px solid var(--accent)' }}>
           <div className="flex flex-wrap gap-2">
             {[
               { key: 'all', label: 'All Splits' },
@@ -298,23 +312,24 @@ export default function EnhancedSplitList({ onSplitSelect, onCreateSplit, onCont
               <button
                 key={key}
                 onClick={() => handleFilterChange(key as FilterType)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  filter === key
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                }`}
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                style={filter === key
+                  ? { backgroundColor: 'var(--yellow)', color: '#ffffff', border: '1px solid var(--yellow)' }
+                  : { backgroundColor: 'var(--background)', border: '1px solid var(--accent)', color: '#ffffff' }
+                }
               >
                 {label}
               </button>
             ))}
           </div>
-          
+
           <div className="flex items-center gap-4">
-            <label className="text-sm text-gray-400">Page Size:</label>
+            <label className="text-sm" style={{ color: 'var(--muted)' }}>Page Size:</label>
             <select
               value={pageSize}
               onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-              className="px-3 py-2 bg-gray-700 text-gray-300 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
+              className="px-3 py-2 text-white rounded-lg focus:outline-none"
+              style={{ backgroundColor: 'var(--background)', border: '1px solid var(--accent)' }}
             >
               <option value={5}>5 per page</option>
               <option value={10}>10 per page</option>
@@ -334,47 +349,21 @@ export default function EnhancedSplitList({ onSplitSelect, onCreateSplit, onCont
             {splits.map((split) => (
               <div
                 key={split.splitId}
-                className="bg-gray-800 rounded-lg p-6 border border-gray-700 hover:border-gray-600 transition-colors"
+                className="rounded-lg p-6 border transition-all hover:shadow-lg"
+                style={{
+                  backgroundColor: 'var(--background)',
+                  borderColor: 'var(--accent)'
+                }}
               >
                 {/* Split Header */}
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-white mb-1 line-clamp-2">
+                    <h3 className="text-lg font-semibold mb-1 line-clamp-2" style={{ color: 'var(--foreground)' }}>
                       {split.description}
                     </h3>
-                    <div className="flex items-center gap-2 text-sm text-gray-400">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(split.status)}`}>
-                        {split.status.toUpperCase()}
-                      </span>
-                      <span>•</span>
+                    <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--yellow)' }}>
                       <span>{getChainName(split.targetChainId)}</span>
                     </div>
-                  </div>
-                </div>
-
-                {/* Split Details */}
-                <div className="space-y-3 mb-4">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-400">Amount</span>
-                    <span className="text-white font-medium">
-                      {formatAmount(split.currentAmount, split.targetToken)} / {formatAmount(split.targetAmount, split.targetToken)}
-                    </span>
-                  </div>
-                  
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-400">Progress</span>
-                    <span className="text-white font-medium">
-                      {getProgressPercentage(split.currentAmount, split.targetAmount).toFixed(1)}%
-                    </span>
-                  </div>
-                  
-                  <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div
-                      className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                      style={{
-                        width: `${Math.min(getProgressPercentage(split.currentAmount, split.targetAmount), 100)}%`
-                      }}
-                    />
                   </div>
                 </div>
 
@@ -382,16 +371,18 @@ export default function EnhancedSplitList({ onSplitSelect, onCreateSplit, onCont
                 <div className="flex gap-2">
                   <button
                     onClick={() => onSplitSelect(split.splitId)}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-white rounded-lg hover:opacity-80 transition-opacity"
+                    style={{ backgroundColor: 'var(--background)', border: '1px solid var(--accent)' }}
                   >
                     <Eye className="w-4 h-4" />
                     View
                   </button>
-                  
+
                   {canContribute(split) && (
                     <button
                       onClick={() => onContribute ? onContribute(split.splitId) : onSplitSelect(split.splitId)}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-white rounded-lg hover:opacity-90 transition-opacity font-medium"
+                      style={{ backgroundColor: 'var(--accent)' }}
                     >
                       <DollarSign className="w-4 h-4" />
                       Contribute

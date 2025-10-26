@@ -14,6 +14,7 @@ interface SplitDetailsViewProps {
 }
 
 const SUPPORTED_TOKENS = [
+  { symbol: 'ETH', name: 'Ether', decimals: 18 },
   { symbol: 'PYUSD', name: 'PayPal USD', decimals: 6 },
   { symbol: 'USDC', name: 'USD Coin', decimals: 6 },
 ];
@@ -46,11 +47,18 @@ export default function SplitDetailsView({ splitId, onBack, onContribute }: Spli
 
   // Format amount
   const formatAmount = (amount: string, token: string) => {
+    if (!amount || amount === '0' || amount === '') return '0';
+
     const tokenInfo = SUPPORTED_TOKENS.find(t => t.symbol === token);
-    if (!tokenInfo || !amount) return '';
-    
-    const numAmount = parseFloat(amount) / Math.pow(10, tokenInfo.decimals);
-    return `${numAmount.toLocaleString()} ${token}`;
+    if (!tokenInfo) return amount;
+
+    try {
+      const numAmount = parseFloat(amount) / Math.pow(10, tokenInfo.decimals);
+      if (isNaN(numAmount)) return '0';
+      return `${numAmount.toLocaleString()} ${token}`;
+    } catch {
+      return amount;
+    }
   };
 
   // Get chain name
@@ -82,7 +90,7 @@ export default function SplitDetailsView({ splitId, onBack, onContribute }: Spli
   // Check if user can contribute
   const canContribute = () => {
     if (!address || !splitData) return false;
-    return splitData.contributors.some((contributor: string) => 
+    return splitData.contributors.some((contributor: string) =>
       contributor.toLowerCase() === address.toLowerCase()
     );
   };
@@ -105,13 +113,13 @@ export default function SplitDetailsView({ splitId, onBack, onContribute }: Spli
               <span>Back to Splits</span>
             </button>
           </div>
-          
+
           <div className="max-w-4xl mx-auto">
-            <div className="bg-gray-800 rounded-lg p-8 animate-pulse">
-              <div className="h-8 bg-gray-700 rounded mb-4" />
-              <div className="h-4 bg-gray-700 rounded mb-2" />
-              <div className="h-4 bg-gray-700 rounded mb-6" />
-              <div className="h-32 bg-gray-700 rounded" />
+            <div className="rounded-lg p-8 animate-pulse" style={{ backgroundColor: 'var(--background)', border: '1px solid var(--accent)' }}>
+              <div className="h-8 rounded mb-4" style={{ backgroundColor: 'var(--background)' }} />
+              <div className="h-4 rounded mb-2" style={{ backgroundColor: 'var(--background)' }} />
+              <div className="h-4 rounded mb-6" style={{ backgroundColor: 'var(--background)' }} />
+              <div className="h-32 rounded" style={{ backgroundColor: 'var(--background)' }} />
             </div>
           </div>
         </div>
@@ -132,16 +140,17 @@ export default function SplitDetailsView({ splitId, onBack, onContribute }: Spli
               <span>Back to Splits</span>
             </button>
           </div>
-          
+
           <div className="max-w-4xl mx-auto text-center py-12">
-            <div className="w-24 h-24 bg-red-900/20 rounded-full mx-auto mb-6 flex items-center justify-center">
+            <div className="w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center" style={{ backgroundColor: 'var(--background)', border: '2px solid #ef4444' }}>
               <Hash className="w-12 h-12 text-red-400" />
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">Split Not Found</h3>
-            <p className="text-gray-400 mb-6">{error || 'The requested split could not be found'}</p>
+            <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--foreground)' }}>Split Not Found</h3>
+            <p className="mb-6" style={{ color: 'var(--muted)' }}>{error || 'The requested split could not be found'}</p>
             <button
               onClick={onBack}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-6 py-3 text-white rounded-lg hover:opacity-90 transition-opacity font-medium"
+              style={{ backgroundColor: 'var(--accent)' }}
             >
               Back to Splits
             </button>
@@ -162,28 +171,26 @@ export default function SplitDetailsView({ splitId, onBack, onContribute }: Spli
         <div className="mb-6">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4"
+            className="flex items-center gap-2 transition-colors mb-4"
+            style={{ color: 'var(--muted)' }}
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Splits</span>
           </button>
-          
+
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2">{splitData.description}</h1>
+              <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>{splitData.description}</h1>
               <div className="flex items-center gap-3">
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(splitData.status)}`}>
-                  {splitData.status.toUpperCase()}
-                </span>
-                <span className="text-gray-400">•</span>
-                <span className="text-gray-400">{getChainName(splitData.targetChainId)}</span>
+                <span style={{ color: 'var(--yellow)' }}>{getChainName(splitData.targetChainId)}</span>
               </div>
             </div>
-            
+
             {canUserContribute && !isCompleted && (
               <button
                 onClick={() => onContribute(splitData.splitId)}
-                className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="flex items-center gap-2 px-6 py-3 text-white rounded-lg hover:opacity-90 transition-opacity font-medium"
+                style={{ backgroundColor: 'var(--accent)' }}
               >
                 <DollarSign className="w-5 h-5" />
                 Contribute
@@ -193,85 +200,59 @@ export default function SplitDetailsView({ splitId, onBack, onContribute }: Spli
         </div>
 
         <div className="max-w-4xl mx-auto space-y-6">
-          {/* Progress Card */}
-          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            <h2 className="text-xl font-semibold text-white mb-4">Progress</h2>
-            
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400">Amount Raised</span>
-                <span className="text-white font-medium">
-                  {formatAmount(splitData.currentAmount, splitData.targetToken)} / {formatAmount(splitData.targetAmount, splitData.targetToken)}
-                </span>
-              </div>
-              
-              <div className="w-full bg-gray-700 rounded-full h-3">
-                <div
-                  className="bg-blue-500 h-3 rounded-full transition-all duration-300"
-                  style={{ width: `${Math.min(progressPercentage, 100)}%` }}
-                />
-              </div>
-              
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-400">Progress</span>
-                <span className="text-white font-medium">{progressPercentage.toFixed(1)}%</span>
-              </div>
-            </div>
-          </div>
-
           {/* Split Details */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Basic Info */}
-            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-              <h3 className="text-lg font-semibold text-white mb-4">Split Information</h3>
-              
+            <div className="rounded-lg p-6" style={{ backgroundColor: 'var(--background)', border: '1px solid var(--accent)' }}>
+              <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--foreground)' }}>Split Information</h3>
+
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Split ID</span>
-                  <span className="text-white font-mono text-sm">{splitData.splitId.slice(0, 10)}...</span>
+                  <span style={{ color: 'var(--muted)' }}>Split ID</span>
+                  <span className="font-mono text-sm" style={{ color: 'var(--foreground)' }}>{splitData.splitId.slice(0, 10)}...</span>
                 </div>
-                
+
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Creator</span>
-                  <span className="text-white font-mono text-sm">{splitData.creator.slice(0, 6)}...{splitData.creator.slice(-4)}</span>
+                  <span style={{ color: 'var(--muted)' }}>Creator</span>
+                  <span className="font-mono text-sm" style={{ color: 'var(--foreground)' }}>{splitData.creator.slice(0, 6)}...{splitData.creator.slice(-4)}</span>
                 </div>
-                
+
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Recipient</span>
-                  <span className="text-white font-mono text-sm">{splitData.recipient.slice(0, 6)}...{splitData.recipient.slice(-4)}</span>
+                  <span style={{ color: 'var(--muted)' }}>Recipient</span>
+                  <span className="font-mono text-sm" style={{ color: 'var(--foreground)' }}>{splitData.recipient.slice(0, 6)}...{splitData.recipient.slice(-4)}</span>
                 </div>
-                
+
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Target Chain</span>
-                  <span className="text-white">{getChainName(splitData.targetChainId)}</span>
+                  <span style={{ color: 'var(--muted)' }}>Target Chain</span>
+                  <span style={{ color: 'var(--yellow)' }}>{getChainName(splitData.targetChainId)}</span>
                 </div>
-                
+
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Target Token</span>
-                  <span className="text-white">{splitData.targetToken}</span>
+                  <span style={{ color: 'var(--muted)' }}>Target Token</span>
+                  <span style={{ color: 'var(--foreground)' }}>{splitData.targetToken}</span>
                 </div>
-                
+
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Created</span>
-                  <span className="text-white">{formatTimestamp(splitData.createdAt)}</span>
+                  <span style={{ color: 'var(--muted)' }}>Created</span>
+                  <span style={{ color: 'var(--foreground)' }}>{formatTimestamp(splitData.createdAt)}</span>
                 </div>
               </div>
             </div>
 
             {/* Contributors */}
-            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <div className="rounded-lg p-6" style={{ backgroundColor: 'var(--background)', border: '1px solid var(--accent)' }}>
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
                 <Users className="w-5 h-5" />
                 Contributors ({splitData.contributors.length})
               </h3>
-              
+
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {splitData.contributors.map((contributor, index) => (
-                  <div key={index} className="flex justify-between items-center py-2 border-b border-gray-700 last:border-b-0">
-                    <span className="text-white font-mono text-sm">
+                  <div key={index} className="flex justify-between items-center py-2 border-b last:border-b-0" style={{ borderColor: 'var(--accent)' }}>
+                    <span className="font-mono text-sm" style={{ color: 'var(--foreground)' }}>
                       {contributor.slice(0, 6)}...{contributor.slice(-4)}
                     </span>
-                    <span className="text-gray-400 text-sm">
+                    <span className="text-sm" style={{ color: 'var(--muted)' }}>
                       {formatAmount(splitData.contributorAmounts[index] || '0', splitData.targetToken)}
                     </span>
                   </div>
@@ -282,34 +263,35 @@ export default function SplitDetailsView({ splitId, onBack, onContribute }: Spli
 
           {/* Transaction Details */}
           {splitData.transactionHash && (
-            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-              <h3 className="text-lg font-semibold text-white mb-4">Transaction Details</h3>
-              
+            <div className="rounded-lg p-6" style={{ backgroundColor: 'var(--background)', border: '1px solid var(--accent)' }}>
+              <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--foreground)' }}>Transaction Details</h3>
+
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Transaction Hash</span>
+                  <span style={{ color: 'var(--muted)' }}>Transaction Hash</span>
                   <a
                     href={`${getChainName(splitData.targetChainId).toLowerCase().includes('sepolia') ? 'https://sepolia.etherscan.io' : 'https://etherscan.io'}/tx/${splitData.transactionHash}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-400 hover:text-blue-300 font-mono text-sm flex items-center gap-1"
+                    className="font-mono text-sm flex items-center gap-1"
+                    style={{ color: 'var(--accent)' }}
                   >
                     {splitData.transactionHash.slice(0, 10)}...
                     <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
-                
+
                 {splitData.blockNumber && (
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Block Number</span>
-                    <span className="text-white font-mono text-sm">{splitData.blockNumber}</span>
+                    <span style={{ color: 'var(--muted)' }}>Block Number</span>
+                    <span className="font-mono text-sm" style={{ color: 'var(--foreground)' }}>{splitData.blockNumber}</span>
                   </div>
                 )}
-                
+
                 {splitData.gasUsed && (
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Gas Used</span>
-                    <span className="text-white font-mono text-sm">{splitData.gasUsed}</span>
+                    <span style={{ color: 'var(--muted)' }}>Gas Used</span>
+                    <span className="font-mono text-sm" style={{ color: 'var(--foreground)' }}>{splitData.gasUsed}</span>
                   </div>
                 )}
               </div>

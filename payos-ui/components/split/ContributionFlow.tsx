@@ -41,10 +41,10 @@ function convertToBytes32(input: string): `0x${string}` {
   }
 }
 
-export default function ContributionFlow({ 
-  splitId, 
-  onBack, 
-  onContributionComplete 
+export default function ContributionFlow({
+  splitId,
+  onBack,
+  onContributionComplete
 }: ContributionFlowProps) {
   const { address } = useAccount();
   const { writeContractAsync, data: hash, isPending, error } = useWriteContract();
@@ -55,11 +55,11 @@ export default function ContributionFlow({
   const { isLoading: isEthConfirming, isSuccess: isEthSuccess } = useTransactionReceipt({
     hash: ethTxHash,
   });
-  
+
   const [splitData, setSplitData] = useState<SplitData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  
+
   // Contribution form state
   const [selectedChainId, setSelectedChainId] = useState(11155111); // Ethereum Sepolia default
   const [selectedToken, setSelectedToken] = useState('ETH');
@@ -113,7 +113,7 @@ export default function ContributionFlow({
   const formatAmount = (amount: string, token: string) => {
     const tokenInfo = SUPPORTED_TOKENS.find(t => t.symbol === token);
     if (!tokenInfo || !amount) return '';
-    
+
     const numAmount = parseFloat(amount) / Math.pow(10, tokenInfo.decimals);
     return `${numAmount.toLocaleString()} ${token}`;
   };
@@ -169,7 +169,7 @@ export default function ContributionFlow({
       } else {
         // For ERC20 tokens, first approve then transfer
         const tokenAddress = getTokenAddress(selectedToken, splitData.targetChainId);
-        
+
         if (!tokenAddress || tokenAddress === '0x0000000000000000000000000000000000000000') {
           throw new Error(`Token ${selectedToken} not available on this chain`);
         }
@@ -257,19 +257,20 @@ export default function ContributionFlow({
           <div className="mb-6">
             <button
               onClick={onBack}
-              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+              className="flex items-center gap-2 transition-colors"
+              style={{ color: 'var(--muted)' }}
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back to Splits</span>
             </button>
           </div>
-          
+
           <div className="max-w-2xl mx-auto">
-            <div className="bg-gray-800 rounded-lg p-8 animate-pulse">
-              <div className="h-8 bg-gray-700 rounded mb-4" />
-              <div className="h-4 bg-gray-700 rounded mb-2" />
-              <div className="h-4 bg-gray-700 rounded mb-6" />
-              <div className="h-32 bg-gray-700 rounded" />
+            <div className="rounded-lg p-8 animate-pulse" style={{ backgroundColor: 'var(--background)', border: '1px solid var(--accent)' }}>
+              <div className="h-8 rounded mb-4" style={{ backgroundColor: 'var(--background)' }} />
+              <div className="h-4 rounded mb-2" style={{ backgroundColor: 'var(--background)' }} />
+              <div className="h-4 rounded mb-6" style={{ backgroundColor: 'var(--background)' }} />
+              <div className="h-32 rounded" style={{ backgroundColor: 'var(--background)' }} />
             </div>
           </div>
         </div>
@@ -290,16 +291,17 @@ export default function ContributionFlow({
               <span>Back to Splits</span>
             </button>
           </div>
-          
+
           <div className="max-w-2xl mx-auto text-center py-12">
-            <div className="w-24 h-24 bg-red-900/20 rounded-full mx-auto mb-6 flex items-center justify-center">
+            <div className="w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center" style={{ backgroundColor: 'var(--background)', border: '2px solid #ef4444' }}>
               <XCircle className="w-12 h-12 text-red-400" />
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">Split Not Found</h3>
-            <p className="text-gray-400 mb-6">{loadError || 'The requested split could not be found'}</p>
+            <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--foreground)' }}>Split Not Found</h3>
+            <p className="mb-6" style={{ color: 'var(--muted)' }}>{loadError || 'The requested split could not be found'}</p>
             <button
               onClick={onBack}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-6 py-3 text-white rounded-lg hover:opacity-90 transition-opacity font-medium"
+              style={{ backgroundColor: 'var(--accent)' }}
             >
               Back to Splits
             </button>
@@ -319,22 +321,24 @@ export default function ContributionFlow({
           <div className="mb-6">
             <button
               onClick={onBack}
-              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+              className="flex items-center gap-2 transition-colors"
+              style={{ color: 'var(--muted)' }}
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back to Splits</span>
             </button>
           </div>
-          
+
           <div className="max-w-2xl mx-auto text-center py-12">
-            <div className="w-24 h-24 bg-green-900/20 rounded-full mx-auto mb-6 flex items-center justify-center">
+            <div className="w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center" style={{ backgroundColor: 'var(--background)', border: '2px solid #10b981' }}>
               <CheckCircle className="w-12 h-12 text-green-400" />
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">Split Completed</h3>
-            <p className="text-gray-400 mb-6">This split has already been completed and no longer accepts contributions.</p>
+            <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--foreground)' }}>Split Completed</h3>
+            <p className="mb-6" style={{ color: 'var(--muted)' }}>This split has already been completed and no longer accepts contributions.</p>
             <button
               onClick={onBack}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-6 py-3 text-white rounded-lg hover:opacity-90 transition-opacity font-medium"
+              style={{ backgroundColor: 'var(--accent)' }}
             >
               Back to Splits
             </button>
@@ -351,50 +355,21 @@ export default function ContributionFlow({
         <div className="mb-6">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4"
+            className="flex items-center gap-2 transition-colors mb-4"
+            style={{ color: 'var(--muted)' }}
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Splits</span>
           </button>
-          
-          <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Contribute to Split</h1>
-            <p className="text-gray-400">{splitData.description}</p>
-          </div>
         </div>
 
         <div className="max-w-2xl mx-auto space-y-6">
-          {/* Split Progress */}
-          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            <h2 className="text-xl font-semibold text-white mb-4">Split Progress</h2>
-            
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400">Amount Raised</span>
-                <span className="text-white font-medium">
-                  {formatAmount(splitData.currentAmount, splitData.targetToken)} / {formatAmount(splitData.targetAmount, splitData.targetToken)}
-                </span>
-              </div>
-              
-              <div className="w-full bg-gray-700 rounded-full h-3">
-                <div
-                  className="bg-blue-500 h-3 rounded-full transition-all duration-300"
-                  style={{ width: `${Math.min(progressPercentage, 100)}%` }}
-                />
-              </div>
-              
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-400">Progress</span>
-                <span className="text-white font-medium">{progressPercentage.toFixed(1)}%</span>
-              </div>
-            </div>
-          </div>
 
           {/* Contribution Form */}
           {step === 'select' && (
-            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-              <h2 className="text-xl font-semibold text-white mb-4">Select Payment Method</h2>
-              
+            <div className="rounded-lg p-6" style={{ backgroundColor: 'var(--background)', border: '1px solid var(--accent)' }}>
+              <h2 className="text-xl font-semibold mb-4" style={{ color: 'var(--foreground)' }}>Select Contribution Method</h2>
+
               <div className="space-y-6">
                 <TokenChainSelector
                   selectedChainId={selectedChainId}
@@ -403,9 +378,9 @@ export default function ContributionFlow({
                   onTokenChange={setSelectedToken}
                   disabled={false}
                 />
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
                     Contribution Amount
                   </label>
                   <div className="relative">
@@ -416,22 +391,24 @@ export default function ContributionFlow({
                       value={contributionAmount}
                       onChange={(e) => setContributionAmount(e.target.value)}
                       placeholder="Enter amount to contribute"
-                      className="w-full px-4 py-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
+                      className="w-full px-4 py-3 text-white rounded-lg border focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                      style={{ backgroundColor: 'var(--background)', borderColor: 'var(--accent)' }}
                     />
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm" style={{ color: 'var(--muted)' }}>
                       {selectedToken}
                     </div>
                   </div>
                 </div>
-                
+
                 {errorMessage && (
                   <div className="text-red-400 text-sm">{errorMessage}</div>
                 )}
-                
+
                 <button
                   onClick={handleContribute}
                   disabled={!contributionAmount || parseFloat(contributionAmount) <= 0 || isPending}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="w-full flex items-center justify-center gap-2 px-6 py-3 text-white rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity font-medium"
+                  style={{ backgroundColor: 'var(--accent)' }}
                 >
                   <DollarSign className="w-5 h-5" />
                   {isPending ? 'Processing...' : `Contribute ${contributionAmount} ${selectedToken}`}
@@ -442,49 +419,52 @@ export default function ContributionFlow({
 
           {/* Processing State */}
           {step === 'processing' && (
-            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 text-center">
-              <div className="w-16 h-16 bg-blue-900/20 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
+            <div className="rounded-lg p-6 text-center" style={{ backgroundColor: 'var(--background)', border: '1px solid var(--accent)' }}>
+              <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: 'var(--background)', border: '2px solid var(--accent)' }}>
+                <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--accent)' }} />
               </div>
-              <h2 className="text-xl font-semibold text-white mb-2">Processing Contribution</h2>
-              <p className="text-gray-400">Please wait while we process your contribution...</p>
+              <h2 className="text-xl font-semibold mb-2" style={{ color: 'var(--foreground)' }}>Processing Contribution</h2>
+              <p style={{ color: 'var(--muted)' }}>Please wait while we process your contribution...</p>
             </div>
           )}
 
           {/* Success State */}
           {step === 'success' && (
-            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 text-center">
-              <div className="w-16 h-16 bg-green-900/20 rounded-full mx-auto mb-4 flex items-center justify-center">
+            <div className="rounded-lg p-6 text-center" style={{ backgroundColor: 'var(--background)', border: '1px solid var(--accent)' }}>
+              <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: 'var(--background)', border: '2px solid #10b981' }}>
                 <CheckCircle className="w-8 h-8 text-green-400" />
               </div>
-              <h2 className="text-xl font-semibold text-white mb-2">Contribution Successful!</h2>
-              <p className="text-gray-400 mb-4">Your contribution has been processed successfully.</p>
-              
+              <h2 className="text-xl font-semibold mb-2" style={{ color: 'var(--foreground)' }}>Contribution Successful!</h2>
+              <p className="mb-4" style={{ color: 'var(--muted)' }}>Your contribution has been processed successfully.</p>
+
               {txHash && (
                 <div className="mb-4">
-                  <p className="text-sm text-gray-400 mb-2">Transaction Hash:</p>
+                  <p className="text-sm mb-2" style={{ color: 'var(--muted)' }}>Transaction Hash:</p>
                   <a
                     href={`https://sepolia.etherscan.io/tx/${txHash}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-400 hover:text-blue-300 font-mono text-sm flex items-center justify-center gap-1"
+                    className="font-mono text-sm flex items-center justify-center gap-1"
+                    style={{ color: 'var(--accent)' }}
                   >
                     {txHash.slice(0, 10)}...
                     <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
               )}
-              
+
               <div className="flex gap-3 justify-center">
                 <button
                   onClick={resetForm}
-                  className="px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                  className="px-6 py-3 text-white rounded-lg hover:opacity-80 transition-opacity"
+                  style={{ backgroundColor: 'var(--background)', border: '1px solid var(--accent)' }}
                 >
                   Contribute Again
                 </button>
                 <button
                   onClick={onBack}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="px-6 py-3 text-white rounded-lg hover:opacity-90 transition-opacity font-medium"
+                  style={{ backgroundColor: 'var(--accent)' }}
                 >
                   Back to Splits
                 </button>
@@ -494,23 +474,25 @@ export default function ContributionFlow({
 
           {/* Error State */}
           {step === 'error' && (
-            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 text-center">
-              <div className="w-16 h-16 bg-red-900/20 rounded-full mx-auto mb-4 flex items-center justify-center">
+            <div className="rounded-lg p-6 text-center" style={{ backgroundColor: 'var(--background)', border: '1px solid var(--accent)' }}>
+              <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: 'var(--background)', border: '2px solid #ef4444' }}>
                 <XCircle className="w-8 h-8 text-red-400" />
               </div>
-              <h2 className="text-xl font-semibold text-white mb-2">Contribution Failed</h2>
-              <p className="text-gray-400 mb-4">{errorMessage}</p>
-              
+              <h2 className="text-xl font-semibold mb-2" style={{ color: 'var(--foreground)' }}>Contribution Failed</h2>
+              <p className="mb-4" style={{ color: 'var(--muted)' }}>{errorMessage}</p>
+
               <div className="flex gap-3 justify-center">
                 <button
                   onClick={resetForm}
-                  className="px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                  className="px-6 py-3 text-white rounded-lg hover:opacity-80 transition-opacity"
+                  style={{ backgroundColor: 'var(--background)', border: '1px solid var(--accent)' }}
                 >
                   Try Again
                 </button>
                 <button
                   onClick={onBack}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="px-6 py-3 text-white rounded-lg hover:opacity-90 transition-opacity font-medium"
+                  style={{ backgroundColor: 'var(--accent)' }}
                 >
                   Back to Splits
                 </button>
