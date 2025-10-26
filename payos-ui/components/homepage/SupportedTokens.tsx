@@ -30,12 +30,12 @@ const SUPPORTED_TOKENS = [
 export default function SupportedTokens() {
     return (
         <div className="w-full">
-            <h2 className="text-3xl font-bold text-center mb-16" style={{ color: 'var(--foreground)' }}>
+            <h2 className="text-4xl font-bold text-center mb-8">
                 Supported Tokens
             </h2>
 
             <div className="max-w-6xl mx-auto px-4">
-                <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4 md:gap-6 lg:gap-8 xl:gap-10 mb-16">
+                <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4 md:gap-6 lg:gap-8 xl:gap-10 mb-8">
                     {SUPPORTED_TOKENS.map((token) => (
                         <div key={token.id} className="flex flex-col items-center gap-3 group flex-shrink-0">
                             <div
@@ -55,10 +55,10 @@ export default function SupportedTokens() {
                             </div>
 
                             <div className="text-center">
-                                <h3 className="text-xs sm:text-sm font-medium leading-tight" style={{ color: 'var(--muted)' }}>
+                                <h3 className="text-xs sm:text-sm font-medium leading-tight">
                                     {token.name}
                                 </h3>
-                                <p className="text-xs font-semibold mt-1" style={{ color: 'var(--accent)' }}>
+                                <p className="text-xs font-semibold mt-1">
                                     {token.symbol}
                                 </p>
                             </div>

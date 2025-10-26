@@ -6,12 +6,12 @@ import { SUPPORTED_CHAINS } from '@/lib/chain-config';
 export default function SupportedChains() {
     return (
         <div className="w-full">
-            <h2 className="text-3xl font-bold text-center mb-16" style={{ color: 'var(--foreground)' }}>
+            <h2 className="text-4xl font-bold text-center mb-8">
                 Supported Chains
             </h2>
 
             <div className="max-w-6xl mx-auto px-4">
-                <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4 md:gap-6 lg:gap-8 xl:gap-10 mb-16">
+                <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4 md:gap-6 lg:gap-8 xl:gap-10">
                     {SUPPORTED_CHAINS.map((chain) => (
                         <div key={chain.id} className="flex flex-col items-center gap-3 group flex-shrink-0">
                             <div
@@ -31,7 +31,7 @@ export default function SupportedChains() {
                             </div>
 
                             <div className="text-center">
-                                <h3 className="text-xs sm:text-sm font-medium leading-tight" style={{ color: 'var(--muted)' }}>
+                                <h3 className="text-xs sm:text-sm font-medium leading-tight">
                                     {chain.name.split(' ').map((part, index) => (
                                         <span key={index}>
                                             {part}
