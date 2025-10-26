@@ -1,13 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useSendTransaction, useTransactionReceipt } from 'wagmi';
 import { ArrowLeft, DollarSign, Loader2, CheckCircle, XCircle, ExternalLink } from 'lucide-react';
 import { SplitService } from '@/database/services/splitService';
 import { SplitData } from '@/lib/types';
 import TokenChainSelector from './TokenChainSelector';
 import { getContractConfig } from '@/lib/contracts';
-import { PAYOS_SPLIT_ABI } from '@/lib/contract-abi';
+import { stringToBytes, pad, bytesToHex, hexToBytes } from 'viem';
+import { getTokenAddress } from '@/lib/token-config';
+import { erc20Abi } from 'viem';
 
 interface ContributionFlowProps {
   splitId: string;
@@ -23,15 +25,35 @@ const SUPPORTED_TOKENS = [
 
 type ContributionStep = 'select' | 'confirm' | 'processing' | 'success' | 'error';
 
+// Helper function to convert splitId to bytes32
+function convertToBytes32(input: string): `0x${string}` {
+  // Check if input is already a hex string (starts with 0x)
+  if (input.startsWith('0x')) {
+    // Parse as hex and pad to 32 bytes
+    const bytes = hexToBytes(input as `0x${string}`);
+    const paddedBytes = pad(bytes, { size: 32 });
+    return bytesToHex(paddedBytes);
+  } else {
+    // Treat as regular string
+    const bytes = stringToBytes(input);
+    const paddedBytes = pad(bytes, { size: 32 });
+    return bytesToHex(paddedBytes);
+  }
+}
+
 export default function ContributionFlow({ 
   splitId, 
   onBack, 
   onContributionComplete 
 }: ContributionFlowProps) {
   const { address } = useAccount();
-  const { writeContract, data: hash, isPending, error } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+  const { writeContractAsync, data: hash, isPending, error } = useWriteContract();
+  const { sendTransaction: sendEthTransaction, data: ethTxHash, isPending: isEthPending } = useSendTransaction();
+  const { isLoading: isConfirming, isSuccess, isError: isReceiptError, error: receiptError } = useWaitForTransactionReceipt({
     hash,
+  });
+  const { isLoading: isEthConfirming, isSuccess: isEthSuccess } = useTransactionReceipt({
+    hash: ethTxHash,
   });
   
   const [splitData, setSplitData] = useState<SplitData | null>(null);
@@ -66,21 +88,26 @@ export default function ContributionFlow({
     }
   }, [splitId]);
 
-  // Update step based on transaction status
+  // Update step based on transaction status (for both ERC20 and ETH)
   useEffect(() => {
-    if (isPending || isConfirming) {
+    const isProcessing = isPending || isConfirming || isEthPending || isEthConfirming;
+    const isSuccessState = isSuccess || isEthSuccess;
+    const hasError = error || isReceiptError;
+
+    if (isProcessing) {
       setStep('processing');
-    } else if (isSuccess) {
+    } else if (isSuccessState) {
       setStep('success');
-      setTxHash(hash || null);
+      setTxHash(hash || ethTxHash || null);
       setTimeout(() => {
         onContributionComplete();
       }, 3000);
-    } else if (error) {
+    } else if (hasError) {
       setStep('error');
-      setErrorMessage(error.message || 'Transaction failed');
+      const errorMsg = error?.message || receiptError?.message || 'Transaction failed';
+      setErrorMessage(errorMsg);
     }
-  }, [isPending, isConfirming, isSuccess, error, hash, onContributionComplete]);
+  }, [isPending, isConfirming, isSuccess, isReceiptError, error, receiptError, hash, ethTxHash, isEthPending, isEthConfirming, isEthSuccess, onContributionComplete]);
 
   // Format amount
   const formatAmount = (amount: string, token: string) => {
@@ -129,23 +156,82 @@ export default function ContributionFlow({
       // Get contract config for target chain
       const contractConfig = getContractConfig(splitData.targetChainId);
 
-      // Generate a mock transaction hash for the contribution
-      const txHash = `0x${Math.random().toString(16).substr(2, 64)}`;
+      let transferTxHash = '';
 
-      // Call the contract directly using wagmi
-      writeContract({
-        address: contractConfig.address as `0x${string}`,
-        abi: PAYOS_SPLIT_ABI,
-        functionName: 'contributeToBill',
-        args: [
-          splitId as `0x${string}`,
-          address,
-          BigInt(selectedChainId),
-          BigInt(amountInWei),
-          BigInt(amountInWei), // target amount (same as source for now)
-          txHash as `0x${string}`
-        ],
-      });
+      if (selectedToken === 'ETH') {
+        // Send ETH directly to the contract address
+        await sendEthTransaction({
+          to: contractConfig.address as `0x${string}`,
+          value: BigInt(amountInWei),
+        });
+        transferTxHash = ethTxHash || '';
+        console.log('ETH sent to contract:', transferTxHash);
+      } else {
+        // For ERC20 tokens, first approve then transfer
+        const tokenAddress = getTokenAddress(selectedToken, splitData.targetChainId);
+        
+        if (!tokenAddress || tokenAddress === '0x0000000000000000000000000000000000000000') {
+          throw new Error(`Token ${selectedToken} not available on this chain`);
+        }
+
+        // Approve the split contract to spend the tokens
+        const approveAmount = BigInt(amountInWei);
+        await writeContractAsync({
+          address: tokenAddress as `0x${string}`,
+          abi: erc20Abi,
+          functionName: 'approve',
+          args: [
+            contractConfig.address as `0x${string}`,
+            approveAmount
+          ],
+        });
+
+        // Wait for approval confirmation
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Transfer tokens to the contract
+        const transferResult = await writeContractAsync({
+          address: tokenAddress as `0x${string}`,
+          abi: erc20Abi,
+          functionName: 'transfer',
+          args: [
+            contractConfig.address as `0x${string}`,
+            BigInt(amountInWei)
+          ],
+        });
+
+        transferTxHash = transferResult;
+        console.log('Token transfer result:', transferResult);
+      }
+
+      // Now call the owner API to record the contribution
+      try {
+        const response = await fetch('/api/contributions/record', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            splitId: splitId,
+            contributor: address,
+            sourceChainId: selectedChainId,
+            sourceAmount: amountInWei,
+            targetAmount: amountInWei,
+            txHash: transferTxHash,
+            chainId: splitData.targetChainId,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to record contribution');
+        }
+
+        const result = await response.json();
+        console.log('Contribution recorded:', result);
+      } catch (apiError) {
+        console.error('Failed to record contribution via owner API:', apiError);
+        // Continue anyway - the funds were sent
+      }
 
     } catch (err) {
       console.error('Contribution failed:', err);

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useAccount, useWriteContract, useReadContract, useSwitchChain, useChainId } from "wagmi";
-import { parseUnits } from "viem";
+import { parseUnits, stringToBytes, pad, bytesToHex, hexToBytes } from "viem";
 import {
   getContractConfig,
   isContractDeployed,
@@ -20,6 +20,22 @@ import {
 import { validateSplitCreation, extractErrorMessage } from "@/lib/utils";
 import { getChainInfo } from "@/lib/chain-config";
 import { SplitService } from "@/database/services/splitService";
+
+// Helper function to convert splitId to bytes32
+function convertToBytes32(input: string): `0x${string}` {
+  // Check if input is already a hex string (starts with 0x)
+  if (input.startsWith('0x')) {
+    // Parse as hex and pad to 32 bytes
+    const bytes = hexToBytes(input as `0x${string}`);
+    const paddedBytes = pad(bytes, { size: 32 });
+    return bytesToHex(paddedBytes);
+  } else {
+    // Treat as regular string
+    const bytes = stringToBytes(input);
+    const paddedBytes = pad(bytes, { size: 32 });
+    return bytesToHex(paddedBytes);
+  }
+}
 
 export function useSplitContract(): UseSplitContractReturn {
   const { user, ready } = usePrivy();
@@ -98,16 +114,26 @@ export function useSplitContract(): UseSplitContractReturn {
           ],
         });
 
-        // Update split in database with transaction hash
+        // Wait for transaction receipt to get the splitId from logs
+        await new Promise(resolve => setTimeout(resolve, 3000));
+
+        // Generate a temporary splitId string from txHash for database storage
+        // The actual bytes32 splitId is in the contract, but we'll use a string identifier
+        const splitIdString = `split_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+        // Store in database
         try {
-          // Note: This would need the splitId to be passed separately or generated
-          // For now, we'll skip the database update
-          console.log("Split created successfully:", txHash);
+          await SplitService.createSplit({
+            ...params,
+            splitId: splitIdString,
+            creator: user.wallet.address,
+          });
+          console.log("Split created successfully in DB:", splitIdString);
         } catch (dbError) {
           console.warn("Failed to update split in DB:", dbError);
         }
 
-        return txHash;
+        return splitIdString;
       } catch (err) {
         const errorMessage = extractErrorMessage(err);
         setError(errorMessage);
@@ -165,8 +191,8 @@ export function useSplitContract(): UseSplitContractReturn {
         const sourceAmountWei = parseUnits(params.sourceAmount, 6).toString(); // Assuming 6 decimals
         const targetAmountWei = parseUnits(params.targetAmount, 6).toString(); // Assuming 6 decimals
 
-        // Generate a mock transaction hash for the contribution
-        const txHash = `0x${Math.random().toString(16).substr(2, 64)}`;
+        // Generate a mock transaction hash for the contribution (32 bytes = 66 hex chars with 0x)
+        const txHash = `0x${Math.random().toString(16).slice(2).padEnd(64, '0')}`;
 
         // Call the contract directly
         const result = await writeContractAsync({
@@ -174,12 +200,12 @@ export function useSplitContract(): UseSplitContractReturn {
           abi: SPLIT_BILL_ABI,
           functionName: "contributeToBill",
           args: [
-            params.splitId as `0x${string}`,
+            convertToBytes32(params.splitId),
             user.wallet.address as `0x${string}`,
             BigInt(params.sourceChainId),
             BigInt(sourceAmountWei),
             BigInt(targetAmountWei),
-            txHash as `0x${string}`
+            convertToBytes32(txHash)
           ],
         });
 

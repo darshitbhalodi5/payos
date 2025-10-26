@@ -9,13 +9,31 @@ import { SplitService } from '@/database/services/splitService';
 import { getContractConfig } from '@/lib/contracts';
 import { PAYOS_SPLIT_ABI } from '@/lib/contract-abi';
 import { useWriteContract } from 'wagmi';
-import { parseUnits } from 'viem';
+import { parseUnits, stringToBytes, pad, bytesToHex, hexToBytes } from 'viem';
 
 interface ContributionParams {
   splitId: string;
   selectedToken: string;
   contributionAmount: string;
   recipient: string;
+}
+
+// Helper function to convert splitId to bytes32
+function convertToBytes32(input: string): `0x${string}` {
+  // Check if input is already a hex string (starts with 0x)
+  if (input.startsWith('0x')) {
+    // Parse as hex and pad to 32 bytes
+    const bytes = hexToBytes(input as `0x${string}`);
+    const paddedBytes = pad(bytes, { size: 32 });
+    return bytesToHex(paddedBytes);
+  } else {
+    // Treat as regular string
+    const bytes = stringToBytes(input);
+    // Pad to 32 bytes
+    const paddedBytes = pad(bytes, { size: 32 });
+    // Convert to hex string
+    return bytesToHex(paddedBytes);
+  }
 }
 
 export function useCrossChainContribution() {
@@ -82,8 +100,8 @@ export function useCrossChainContribution() {
         // After bridge completes, wait a bit for confirmation
         await new Promise(resolve => setTimeout(resolve, 5000));
 
-        // Generate a tx hash for the bridge transaction
-        const bridgeTxHash = `0x${Math.random().toString(16).substr(2, 64)}` as `0x${string}`;
+        // Generate a tx hash for the bridge transaction (32 bytes = 66 hex chars with 0x)
+        const bridgeTxHash = `0x${Math.random().toString(16).slice(2).padEnd(64, '0')}` as `0x${string}`;
 
         // Call smart contract with bridge tx hash
         const contractConfig = getContractConfig(splitData.targetChainId);
@@ -103,12 +121,12 @@ export function useCrossChainContribution() {
           abi: PAYOS_SPLIT_ABI,
           functionName: 'contributeToBill',
           args: [
-            params.splitId as `0x${string}`,
+            convertToBytes32(params.splitId),
             params.recipient as `0x${string}`,
             BigInt(chainId),
             sourceAmountInUnits,
             targetAmountInUnits,
-            bridgeTxHash
+            convertToBytes32(bridgeTxHash)
           ],
         });
 
@@ -135,17 +153,19 @@ export function useCrossChainContribution() {
           splitData.targetToken === 'ETH' ? 18 : 6
         );
 
+        const txHash = `0x${Math.random().toString(16).slice(2).padEnd(64, '0')}` as `0x${string}`;
+
         writeContract({
           address: contractConfig.address as `0x${string}`,
           abi: PAYOS_SPLIT_ABI,
           functionName: 'contributeToBill',
           args: [
-            params.splitId as `0x${string}`,
+            convertToBytes32(params.splitId),
             params.recipient as `0x${string}`,
             BigInt(chainId),
             sourceAmountInUnits,
             targetAmountInUnits,
-            `0x${Math.random().toString(16).substr(2, 64)}` as `0x${string}`
+            convertToBytes32(txHash)
           ],
         });
 
