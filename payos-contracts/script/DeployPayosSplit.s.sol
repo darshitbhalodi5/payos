@@ -60,7 +60,6 @@ contract DeployPayosSplit is Script {
     ) internal pure returns (string memory) {
         if (chainId == 11155420) return "op-sepolia";
         if (chainId == 84532) return "base-sepolia";
-        if (chainId == 80002) return "polygon-amoy";
         if (chainId == 421614) return "arb-sepolia";
         if (chainId == 11155111) return "eth-sepolia";
         return vm.toString(chainId);

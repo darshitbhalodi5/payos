@@ -18,7 +18,6 @@ echo ""
 # Array of networks
 declare -A NETWORKS=(
     ["arb-sepolia"]="$ARB_SEPOLIA_RPC_URL"
-    ["polygon-amoy"]="$POLYGON_AMOY_RPC_URL"
     ["base-sepolia"]="$BASE_SEPOLIA_RPC_URL"
     ["op-sepolia"]="$OP_SEPOLIA_RPC_URL"
     ["eth-sepolia"]="$ETH_SEPOLIA_RPC_URL"
