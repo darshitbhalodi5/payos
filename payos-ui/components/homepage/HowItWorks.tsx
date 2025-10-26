@@ -55,7 +55,7 @@ export default function HowItWorks() {
                                 </div>
 
                                 {/* Step Number Badge */}
-                                <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow rounded-full flex items-center justify-center">
+                                <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--yellow)' }}>
                                     <span className="text-sm font-bold" style={{ color: '#ffffff' }}>{item.step}</span>
                                 </div>
                             </div>

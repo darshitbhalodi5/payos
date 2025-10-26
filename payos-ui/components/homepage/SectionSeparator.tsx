@@ -1,5 +1,3 @@
-'use client';
-
 interface SectionSeparatorProps {
     variant?: 'default';
 }
