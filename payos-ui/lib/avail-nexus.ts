@@ -53,7 +53,7 @@ class AvailNexusSDK {
     this.config = config;
   }
 
-  async initialize(_provider: unknown): Promise<void> {
+  async initialize(): Promise<void> {
     try {
       // Initialize the SDK with the provider
       console.log('Initializing Avail Nexus SDK...');
@@ -99,7 +99,7 @@ class AvailNexusSDK {
     }
   }
 
-  async getTokenBalance(_token: string, _address: string, _chainId: number): Promise<string> {
+  async getTokenBalance(): Promise<string> {
     if (!this.isInitialized) {
       throw new Error('SDK not initialized. Call initialize() first.');
     }
@@ -143,7 +143,7 @@ class AvailNexusSDK {
     }
   }
 
-  async estimateGas(_params: BridgeAndExecuteParams): Promise<{
+  async estimateGas(): Promise<{
     gasLimit: string;
     gasPrice: string;
     estimatedCost: string;
@@ -165,7 +165,7 @@ class AvailNexusSDK {
     }
   }
 
-  async getTransactionStatus(_txHash: string): Promise<{
+  async getTransactionStatus(): Promise<{
     status: 'pending' | 'completed' | 'failed';
     confirmations: number;
     blockNumber?: number;

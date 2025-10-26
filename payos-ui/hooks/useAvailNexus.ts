@@ -31,11 +31,17 @@ export function useAvailNexus(): UseAvailNexusReturn {
         // Get the provider from the wallet
         const provider = window.ethereum;
         if (!provider) {
-          throw new Error('No wallet provider found');
+          throw new Error('No wallet provider found. Please make sure MetaMask is installed and connected.');
         }
 
+        console.log('Initializing Avail Nexus SDK with provider:', provider);
         await availNexusHelper.initialize(provider);
+        
+        // Add a small delay to ensure initialization is fully complete
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         setIsInitialized(true);
+        console.log('✅ Avail Nexus SDK initialized successfully');
       } catch (err) {
         console.error('Failed to initialize Avail Nexus SDK:', err);
         setError(err instanceof Error ? err.message : 'Failed to initialize SDK');
@@ -46,12 +52,29 @@ export function useAvailNexus(): UseAvailNexusReturn {
     };
 
     initializeSDK();
+
+    // Cleanup on unmount
+    return () => {
+      availNexusHelper.cleanup();
+    };
   }, [ready, user?.wallet]);
 
   // Bridge and execute function
   const bridgeAndExecute = useCallback(async (params: BridgeAndExecuteParams): Promise<BridgeResult> => {
     if (!isInitialized) {
       throw new Error('SDK not initialized');
+    }
+
+    // Double-check that the helper is actually ready with retry
+    let retries = 3;
+    while (retries > 0 && !availNexusHelper.isReady()) {
+      console.log(`SDK not ready, retrying... (${retries} attempts left)`);
+      await new Promise(resolve => setTimeout(resolve, 100));
+      retries--;
+    }
+
+    if (!availNexusHelper.isReady()) {
+      throw new Error('Avail Nexus SDK is not ready. Please wait for initialization to complete.');
     }
 
     try {
@@ -71,7 +94,7 @@ export function useAvailNexus(): UseAvailNexusReturn {
       setError(errorMessage);
       throw err;
     }
-  }, [isInitialized, user?.wallet?.address]);
+  }, [isInitialized]);
 
   // Get token balance
   const getTokenBalance = useCallback(async (token: string, address: string, chainId: number): Promise<string> => {
@@ -79,10 +102,15 @@ export function useAvailNexus(): UseAvailNexusReturn {
       throw new Error('SDK not initialized');
     }
 
+    // Double-check that the helper is actually ready
+    if (!availNexusHelper.isReady()) {
+      throw new Error('Avail Nexus SDK is not ready. Please wait for initialization to complete.');
+    }
+
     try {
       setError(null);
       const balances = await availNexusHelper.getUnifiedBalance(address);
-      return balances?.[token]?.[chainId] || '0';
+      return balances?.[token]?.[chainId.toString()] || '0';
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to get token balance';
       setError(errorMessage);
@@ -94,6 +122,11 @@ export function useAvailNexus(): UseAvailNexusReturn {
   const getSupportedTokens = useCallback(async (chainId: number) => {
     if (!isInitialized) {
       throw new Error('SDK not initialized');
+    }
+
+    // Double-check that the helper is actually ready
+    if (!availNexusHelper.isReady()) {
+      throw new Error('Avail Nexus SDK is not ready. Please wait for initialization to complete.');
     }
 
     try {
@@ -114,6 +147,11 @@ export function useAvailNexus(): UseAvailNexusReturn {
       throw new Error('SDK not initialized');
     }
 
+    // Double-check that the helper is actually ready
+    if (!availNexusHelper.isReady()) {
+      throw new Error('Avail Nexus SDK is not ready. Please wait for initialization to complete.');
+    }
+
     try {
       setError(null);
       return await availNexusHelper.estimateGas(params);
@@ -128,6 +166,11 @@ export function useAvailNexus(): UseAvailNexusReturn {
   const getTransactionStatus = useCallback(async (txHash: string) => {
     if (!isInitialized) {
       throw new Error('SDK not initialized');
+    }
+
+    // Double-check that the helper is actually ready
+    if (!availNexusHelper.isReady()) {
+      throw new Error('Avail Nexus SDK is not ready. Please wait for initialization to complete.');
     }
 
     try {

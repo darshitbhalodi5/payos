@@ -16,7 +16,7 @@ export default function NewSplitPage() {
     }
   }, [authenticated, router]);
 
-  const handleSplitCreated = (_splitId: string) => {
+  const handleSplitCreated = () => {
     setIsRedirecting(true);
     // Redirect back to split list after creation
     router.push('/split');

@@ -1,237 +1,282 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useAvailNexus } from '@/hooks/useAvailNexus';
+import { useSplitContract } from '@/hooks/useSplitContract';
 
 interface AvailNexusIntegrationProps {
   splitId: string;
-  contributorAddress: string;
-  sourceChainId: number;
-  sourceToken: string;
-  sourceAmount: string;
   targetChainId: number;
   targetToken: string;
   targetAmount: string;
-  onSuccess: (txHash: string) => void;
-  onError: (error: string) => void;
+  onContributionComplete: (txHash: string) => void;
 }
-
-// This component now uses the real AvailNexus hook instead of mock data
 
 export default function AvailNexusIntegration({
   splitId,
-  contributorAddress,
-  sourceChainId,
-  sourceToken,
-  sourceAmount,
   targetChainId,
   targetToken,
   targetAmount,
-  onSuccess,
-  onError,
+  onContributionComplete,
 }: AvailNexusIntegrationProps) {
   const { user } = usePrivy();
-  const { bridgeAndExecute, isInitialized } = useAvailNexus();
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [currentStep, setCurrentStep] = useState('');
+  const { 
+    isInitialized, 
+    isLoading: nexusLoading, 
+    error: nexusError,
+    getTokenBalance,
+    estimateGas,
+    clearError 
+  } = useAvailNexus();
+  
+  const { contributeToSplit, isLoading: contractLoading } = useSplitContract();
+  
+  const [sourceChainId, setSourceChainId] = useState<number>(11155111); // Default to Ethereum Sepolia
+  const [sourceToken, setSourceToken] = useState<string>('ETH');
+  const [sourceAmount, setSourceAmount] = useState<string>('');
+  const [userBalance, setUserBalance] = useState<string>('0');
+  const [gasEstimate, setGasEstimate] = useState<{
+    gasLimit: string;
+    gasPrice: string;
+    estimatedCost: string;
+  } | null>(null);
+  const [isContributing, setIsContributing] = useState(false);
 
-  const steps = useMemo(() => [
-    'Initializing Avail Nexus SDK...',
-    'Bridging tokens across chains...',
-    'Converting to target token...',
-    'Executing smart contract...',
-    'Confirming transaction...',
-  ], []);
+  // Supported chains for source selection
+  const supportedChains = [
+    { id: 11155111, name: 'Ethereum Sepolia', symbol: 'ETH' },
+    { id: 421614, name: 'Arbitrum Sepolia', symbol: 'ARB' },
+    { id: 11155420, name: 'Optimism Sepolia', symbol: 'OP' },
+    { id: 84532, name: 'Base Sepolia', symbol: 'BASE' },
+  ];
 
-  useEffect(() => {
-    if (isProcessing) {
-      const interval = setInterval(() => {
-        setProgress(prev => {
-          if (prev >= 100) {
-            clearInterval(interval);
-            return 100;
-          }
-          return prev + 20;
-        });
-      }, 600);
+  const supportedTokens = ['ETH', 'USDC', 'PYUSD'];
 
-      return () => clearInterval(interval);
-    }
-  }, [isProcessing]);
-
-  useEffect(() => {
-    if (isProcessing) {
-      const stepInterval = setInterval(() => {
-        setCurrentStep(prev => {
-          const currentIndex = steps.indexOf(prev);
-          const nextIndex = (currentIndex + 1) % steps.length;
-          return steps[nextIndex];
-        });
-      }, 600);
-
-      return () => clearInterval(stepInterval);
-    }
-  }, [isProcessing, steps]);
-
-  const processPayment = async () => {
-    if (!user?.wallet?.address) {
-      onError('Wallet not connected');
-      return;
-    }
-
-    if (!isInitialized) {
-      onError('Avail Nexus SDK not initialized');
-      return;
-    }
-
-    setIsProcessing(true);
-    setProgress(0);
-    setCurrentStep(steps[0]);
-
+  const loadUserBalance = useCallback(async () => {
+    if (!user?.wallet?.address) return;
+    
     try {
-      // Use real Avail Nexus SDK
-      const result = await bridgeAndExecute({
+      const balance = await getTokenBalance(sourceToken, user.wallet.address, sourceChainId);
+      setUserBalance(balance);
+    } catch (error) {
+      console.error('Failed to load user balance:', error);
+    }
+  }, [user?.wallet?.address, sourceToken, sourceChainId, getTokenBalance]);
+
+  const estimateGasCost = useCallback(async () => {
+    if (!sourceAmount || !sourceToken) return;
+    
+    try {
+      const estimate = await estimateGas({
         splitId,
-        contributor: contributorAddress,
+        contributor: user?.wallet?.address || '',
         sourceToken,
         sourceAmount,
         sourceChainId,
         targetToken,
         targetAmount,
         targetChainId,
-        contractAddress: process.env.NEXT_PUBLIC_SPLIT_CONTRACT_ADDRESS || '0xSplitContract',
-        contractAbi: [], // Will be provided by the hook
+        contractAddress: '', // Will be filled by the helper
+        contractAbi: [],
+      });
+      setGasEstimate(estimate);
+    } catch (error) {
+      console.error('Failed to estimate gas:', error);
+    }
+  }, [sourceAmount, sourceToken, sourceChainId, targetToken, targetAmount, targetChainId, estimateGas, splitId, user?.wallet?.address]);
+
+  // Load user balance when source chain/token changes
+  useEffect(() => {
+    if (isInitialized && user?.wallet?.address && sourceToken) {
+      loadUserBalance();
+    }
+  }, [isInitialized, user?.wallet?.address, sourceChainId, sourceToken, loadUserBalance]);
+
+  // Estimate gas when parameters change
+  useEffect(() => {
+    if (isInitialized && sourceAmount && sourceToken && sourceChainId) {
+      estimateGasCost();
+    }
+  }, [isInitialized, sourceAmount, sourceToken, sourceChainId, targetChainId, estimateGasCost]);
+
+  const handleContribute = async () => {
+    if (!user?.wallet?.address || !sourceAmount || !sourceToken) return;
+
+    try {
+      setIsContributing(true);
+      clearError();
+
+      // Use the contract hook which internally uses Avail Nexus SDK
+      const txHash = await contributeToSplit({
+        splitId,
+        sourceChainId,
+        sourceToken,
+        sourceAmount,
+        targetChainId,
+        targetToken,
+        targetAmount,
       });
 
-      if (result.success && result.transactionHash) {
-        onSuccess(result.transactionHash);
-      } else {
-        onError(result.error || 'Transaction failed');
-      }
+      onContributionComplete(txHash);
     } catch (error) {
-      console.error('Avail Nexus SDK error:', error);
-      onError(error instanceof Error ? error.message : 'Unknown error occurred');
+      console.error('Contribution failed:', error);
     } finally {
-      setIsProcessing(false);
+      setIsContributing(false);
     }
   };
 
-  const formatAmount = (amount: string, token: string) => {
-    const numAmount = parseFloat(amount);
-    if (isNaN(numAmount)) return '';
-    return `${numAmount.toLocaleString()} ${token}`;
+  const formatBalance = (balance: string, token: string) => {
+    const numBalance = parseFloat(balance);
+    if (isNaN(numBalance)) return '0';
+    
+    const decimals = token === 'ETH' ? 18 : 6;
+    const formatted = numBalance / Math.pow(10, decimals);
+    return `${formatted.toFixed(4)} ${token}`;
   };
 
-  const getChainName = (chainId: number) => {
-    const chains: { [key: number]: string } = {
-      11155111: 'Ethereum Sepolia',
-      421614: 'Arbitrum Sepolia',
-      11155420: 'Optimism Sepolia',
-      84532: 'Base Sepolia',
-    };
-    return chains[chainId] || `Chain ${chainId}`;
-  };
+  if (!isInitialized) {
+    return (
+      <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-400">
+            {nexusLoading ? 'Initializing Avail Nexus SDK...' : 'Waiting for wallet connection...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-      <div className="text-center mb-6">
-        <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mx-auto mb-4 flex items-center justify-center">
-          <span className="text-2xl">🚀</span>
-        </div>
-        <h2 className="text-xl font-semibold text-white mb-2">Avail Nexus SDK</h2>
-        <p className="text-gray-400 text-sm">
-          Seamless cross-chain payment processing
-        </p>
-      </div>
+      <h3 className="text-lg font-semibold text-white mb-4">
+        Cross-Chain Contribution via Avail Nexus
+      </h3>
 
-      {/* Payment Summary */}
-      <div className="bg-gray-700 rounded-lg p-4 mb-6">
-        <h3 className="text-sm font-medium text-gray-300 mb-3">Payment Summary</h3>
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-gray-400">From:</span>
-            <span className="text-white">
-              {formatAmount(sourceAmount, sourceToken)} on {getChainName(sourceChainId)}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-400">To:</span>
-            <span className="text-white">
-              {formatAmount(targetAmount, targetToken)} on {getChainName(targetChainId)}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-400">Split ID:</span>
-            <span className="text-white font-mono text-xs">
-              {splitId.slice(0, 10)}...{splitId.slice(-8)}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Processing Status */}
-      {isProcessing && (
-        <div className="mb-6">
-          <div className="flex justify-between text-sm text-gray-400 mb-2">
-            <span>Processing...</span>
-            <span>{progress}%</span>
-          </div>
-          <div className="w-full bg-gray-700 rounded-full h-2 mb-4">
-            <div 
-              className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            ></div>
-          </div>
-          <div className="text-center">
-            <div className="text-sm text-gray-300 mb-2">{currentStep}</div>
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
-          </div>
+      {nexusError && (
+        <div className="bg-red-500/10 border border-red-500 rounded-lg p-3 mb-4">
+          <p className="text-red-400 text-sm">{nexusError}</p>
+          <button
+            onClick={clearError}
+            className="text-red-400 hover:text-red-300 text-sm underline mt-1"
+          >
+            Dismiss
+          </button>
         </div>
       )}
 
-      {/* Features List */}
-      <div className="mb-6">
-        <h3 className="text-sm font-medium text-gray-300 mb-3">What Avail Nexus SDK handles:</h3>
-        <ul className="space-y-2 text-sm text-gray-400">
-          <li className="flex items-center">
-            <span className="text-green-500 mr-2">✓</span>
-            Cross-chain token bridging
-          </li>
-          <li className="flex items-center">
-            <span className="text-green-500 mr-2">✓</span>
-            Automatic token conversion
-          </li>
-          <li className="flex items-center">
-            <span className="text-green-500 mr-2">✓</span>
-            Gas fee optimization
-          </li>
-          <li className="flex items-center">
-            <span className="text-green-500 mr-2">✓</span>
-            Transaction confirmation
-          </li>
-          <li className="flex items-center">
-            <span className="text-green-500 mr-2">✓</span>
-            Smart contract execution
-          </li>
-        </ul>
-      </div>
+      <div className="space-y-4">
+        {/* Source Chain Selection */}
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            Source Chain
+          </label>
+          <select
+            value={sourceChainId}
+            onChange={(e) => setSourceChainId(Number(e.target.value))}
+            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {supportedChains.map((chain) => (
+              <option key={chain.id} value={chain.id}>
+                {chain.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      {/* Action Button */}
-      <button
-        onClick={processPayment}
-        disabled={isProcessing}
-        className="w-full py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-      >
-        {isProcessing ? 'Processing...' : 'Process Payment with Avail Nexus SDK'}
-      </button>
+        {/* Source Token Selection */}
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            Source Token
+          </label>
+          <select
+            value={sourceToken}
+            onChange={(e) => setSourceToken(e.target.value)}
+            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {supportedTokens.map((token) => (
+              <option key={token} value={token}>
+                {token}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      {/* Info Footer */}
-      <div className="mt-4 text-center">
-        <p className="text-xs text-gray-500">
-          Powered by Avail Nexus SDK • Cross-chain made simple
-        </p>
+        {/* User Balance Display */}
+        <div className="bg-gray-700 rounded-lg p-3">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-400">Your Balance:</span>
+            <span className="text-sm text-white font-mono">
+              {formatBalance(userBalance, sourceToken)}
+            </span>
+          </div>
+        </div>
+
+        {/* Amount Input */}
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            Amount to Contribute
+          </label>
+          <div className="relative">
+            <input
+              type="number"
+              value={sourceAmount}
+              onChange={(e) => setSourceAmount(e.target.value)}
+              placeholder="0.1"
+              min="0"
+              step="0.001"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <div className="absolute right-3 top-2 text-sm text-gray-400">
+              {sourceToken}
+            </div>
+          </div>
+        </div>
+
+        {/* Gas Estimate */}
+        {gasEstimate && (
+          <div className="bg-gray-700 rounded-lg p-3">
+            <h4 className="text-sm font-medium text-gray-300 mb-2">Gas Estimate</h4>
+            <div className="space-y-1 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-400">Gas Limit:</span>
+                <span className="text-white font-mono">{gasEstimate.gasLimit}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Gas Price:</span>
+                <span className="text-white font-mono">{gasEstimate.gasPrice} wei</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Estimated Cost:</span>
+                <span className="text-white font-mono">{gasEstimate.estimatedCost} ETH</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Contribution Button */}
+        <button
+          onClick={handleContribute}
+          disabled={isContributing || contractLoading || !sourceAmount || parseFloat(sourceAmount) <= 0}
+          className="w-full py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {isContributing || contractLoading ? (
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              Processing Cross-Chain Contribution...
+            </div>
+          ) : (
+            'Contribute via Avail Nexus'
+          )}
+        </button>
+
+        {/* Info */}
+        <div className="bg-blue-500/10 border border-blue-500 rounded-lg p-3">
+          <p className="text-blue-400 text-sm">
+            <strong>Avail Nexus SDK:</strong> This will automatically bridge your {sourceToken} from {supportedChains.find(c => c.id === sourceChainId)?.name} to {supportedChains.find(c => c.id === targetChainId)?.name} and contribute to the split. The entire process happens in one transaction!
+          </p>
+        </div>
       </div>
     </div>
   );

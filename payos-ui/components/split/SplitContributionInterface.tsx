@@ -5,7 +5,6 @@ import { useAccount } from 'wagmi';
 import { ArrowLeft, DollarSign, Loader2, CheckCircle, XCircle, ExternalLink } from 'lucide-react';
 import { SplitService } from '@/database/services/splitService';
 import { SplitData } from '@/lib/types';
-import { SUPPORTED_CHAINS } from '@/lib/chain-config';
 import { useAvailNexus } from '@/hooks/useAvailNexus';
 import TokenChainSelector from './TokenChainSelector';
 
@@ -29,7 +28,13 @@ export default function SplitContributionInterface({
   onContributionComplete 
 }: SplitContributionInterfaceProps) {
   const { address } = useAccount();
-  const { bridgeAndExecute, isInitialized: nexusInitialized, error: nexusError } = useAvailNexus();
+  const { 
+    bridgeAndExecute, 
+    isInitialized: nexusInitialized, 
+    isLoading: nexusLoading,
+    error: nexusError,
+    clearError: clearNexusError 
+  } = useAvailNexus();
   
   const [splitData, setSplitData] = useState<SplitData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -72,11 +77,6 @@ export default function SplitContributionInterface({
     return `${numAmount.toLocaleString()} ${token}`;
   };
 
-  // Get chain name
-  const getChainName = (chainId: number) => {
-    const chain = SUPPORTED_CHAINS.find(c => c.id === chainId);
-    return chain ? chain.name : `Chain ${chainId}`;
-  };
 
   // Get progress percentage
   const getProgressPercentage = (current: string, target: string) => {
@@ -181,6 +181,34 @@ export default function SplitContributionInterface({
     );
   }
 
+  // Show Avail Nexus SDK loading state
+  if (nexusLoading) {
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-6">
+            <button
+              onClick={onBack}
+              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to Splits</span>
+            </button>
+          </div>
+          
+          <div className="max-w-2xl mx-auto text-center py-12">
+            <div className="w-24 h-24 bg-blue-900/20 rounded-full mx-auto mb-6 flex items-center justify-center">
+              <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-4">Initializing Avail Nexus SDK</h2>
+            <p className="text-gray-400 mb-2">Setting up cross-chain capabilities...</p>
+            <p className="text-gray-500 text-sm">This may take a few seconds</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (error || !splitData) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
@@ -228,14 +256,30 @@ export default function SplitContributionInterface({
           </div>
           
           <div className="max-w-2xl mx-auto text-center py-12">
-            <div className="w-24 h-24 bg-yellow-900/20 rounded-full mx-auto mb-6 flex items-center justify-center">
-              <Loader2 className="w-12 h-12 text-yellow-400 animate-spin" />
+            <div className="w-24 h-24 bg-red-900/20 rounded-full mx-auto mb-6 flex items-center justify-center">
+              <XCircle className="w-12 h-12 text-red-400" />
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">Initializing Avail Nexus SDK</h3>
-            <p className="text-gray-400 mb-6">Please wait while we initialize the cross-chain payment system...</p>
-            {nexusError && (
-              <p className="text-red-400 text-sm mb-6">Error: {nexusError}</p>
-            )}
+            <h3 className="text-xl font-semibold text-white mb-2">Avail Nexus SDK Not Initialized</h3>
+            <p className="text-gray-400 mb-4">
+              {nexusError || 'The Avail Nexus SDK failed to initialize. This is required for cross-chain contributions.'}
+            </p>
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  clearNexusError();
+                  window.location.reload();
+                }}
+                className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Retry Initialization
+              </button>
+              <button
+                onClick={onBack}
+                className="w-full px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                Back to Splits
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useAvailNexus } from "./useAvailNexus";
-import { useAccount, useWriteContract, useReadContract } from "wagmi";
+import { useAccount, useWriteContract, useReadContract, useSwitchChain, useChainId } from "wagmi";
 import { parseUnits } from "viem";
 import {
   getContractConfig,
@@ -20,12 +20,15 @@ import {
   type UseSplitContractReturn,
 } from "@/lib/types";
 import { validateSplitCreation, extractErrorMessage } from "@/lib/utils";
+import { getChainInfo } from "@/lib/chain-config";
 import { SplitService } from "@/database/services/splitService";
 
 export function useSplitContract(): UseSplitContractReturn {
   const { user, ready } = usePrivy();
   const { chainId: connectedChainId } = useAccount();
   const { writeContractAsync } = useWriteContract();
+  const { switchChain } = useSwitchChain();
+  const currentChainId = useChainId();
   const { isInitialized: nexusInitialized } = useAvailNexus();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -71,15 +74,52 @@ export function useSplitContract(): UseSplitContractReturn {
 
         // Ensure wallet is on the correct network
         if (connectedChainId && connectedChainId !== params.targetChainId) {
-          // If wrong network, try to delete the split from DB (ignore if MongoDB unavailable)
+          const currentChain = getChainInfo(connectedChainId);
+          const targetChain = getChainInfo(params.targetChainId);
+          console.log(`Switching from ${currentChain?.name || `Chain ${connectedChainId}`} to ${targetChain?.name || `Chain ${params.targetChainId}`}`);
+          
           try {
-            await SplitService.deleteSplit(splitId);
-          } catch (error) {
-            console.warn('Could not delete split from MongoDB:', error);
+            // Attempt to switch to the target chain
+            await switchChain({ chainId: params.targetChainId });
+            
+            // Wait a moment for the chain switch to complete
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Check if the switch was successful
+            // Note: We need to wait for the chain to actually switch
+            // The currentChainId will update automatically via the hook
+            if (currentChainId !== params.targetChainId) {
+              // If switch failed, try to delete the split from DB and throw error
+              try {
+                await SplitService.deleteSplit(splitId);
+              } catch (error) {
+                console.warn('Could not delete split from MongoDB:', error);
+              }
+              throw new Error(
+                `Failed to switch to ${targetChain?.name || `Chain ${params.targetChainId}`}. Please switch manually.`
+              );
+            }
+            
+            console.log(`Successfully switched to ${targetChain?.name || `Chain ${params.targetChainId}`}`);
+          } catch (switchError) {
+            console.error('Chain switch failed:', switchError);
+            
+            // If switch failed, try to delete the split from DB
+            try {
+              await SplitService.deleteSplit(splitId);
+            } catch (error) {
+              console.warn('Could not delete split from MongoDB:', error);
+            }
+            
+            // Check if it's a user rejection
+            if (switchError instanceof Error && switchError.message.includes('User rejected')) {
+              throw new Error('Chain switch was cancelled by user');
+            }
+            
+            throw new Error(
+              `Please switch your wallet to ${targetChain?.name || `Chain ${params.targetChainId}`} manually`
+            );
           }
-          throw new Error(
-            `Please switch your wallet to chain ${params.targetChainId}`
-          );
         }
 
         // Get contract config
@@ -154,7 +194,7 @@ export function useSplitContract(): UseSplitContractReturn {
         setIsLoading(false);
       }
     },
-    [ready, user?.wallet?.address, connectedChainId, writeContractAsync]
+    [ready, user?.wallet?.address, connectedChainId, writeContractAsync, switchChain, currentChainId]
   );
 
   // Create simple split (equal distribution)
@@ -216,6 +256,39 @@ export function useSplitContract(): UseSplitContractReturn {
         );
       }
 
+      // Ensure wallet is on the correct network for contribution
+      if (connectedChainId && connectedChainId !== params.targetChainId) {
+        const currentChain = getChainInfo(connectedChainId);
+        const targetChain = getChainInfo(params.targetChainId);
+        console.log(`Switching from ${currentChain?.name || `Chain ${connectedChainId}`} to ${targetChain?.name || `Chain ${params.targetChainId}`} for contribution`);
+        
+        try {
+          await switchChain({ chainId: params.targetChainId });
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // Check if the switch was successful
+          // Note: We need to wait for the chain to actually switch
+          // The currentChainId will update automatically via the hook
+          if (currentChainId !== params.targetChainId) {
+            throw new Error(
+              `Failed to switch to ${targetChain?.name || `Chain ${params.targetChainId}`}. Please switch manually.`
+            );
+          }
+          
+          console.log(`Successfully switched to ${targetChain?.name || `Chain ${params.targetChainId}`} for contribution`);
+        } catch (switchError) {
+          console.error('Chain switch failed for contribution:', switchError);
+          
+          if (switchError instanceof Error && switchError.message.includes('User rejected')) {
+            throw new Error('Chain switch was cancelled by user');
+          }
+          
+          throw new Error(
+            `Please switch your wallet to ${targetChain?.name || `Chain ${params.targetChainId}`} manually`
+          );
+        }
+      }
+
       try {
         setIsLoading(true);
         setError(null);
@@ -253,6 +326,10 @@ export function useSplitContract(): UseSplitContractReturn {
           contractAbi: SPLIT_BILL_ABI as unknown as unknown[],
         });
 
+        if (!result.success) {
+          throw new Error(result.error || 'Contribution failed');
+        }
+
         return result.transactionHash || '';
       } catch (err) {
         const errorMessage = extractErrorMessage(err);
@@ -262,7 +339,7 @@ export function useSplitContract(): UseSplitContractReturn {
         setIsLoading(false);
       }
     },
-    [ready, user?.wallet?.address, nexusInitialized]
+    [ready, user?.wallet?.address, nexusInitialized, connectedChainId, switchChain, currentChainId]
   );
 
   // Get split data
