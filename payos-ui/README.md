@@ -1,15 +1,15 @@
 # PayOS UI
 
-A modern, responsive web application for cross-chain payroll management built with Next.js 15, React 19, and integrated with Avail Nexus SDK for seamless cross-chain operations.
+A modern, responsive web application for cross-chain bill splitting built with Next.js 15, React 19, and integrated with Avail Nexus SDK for seamless cross-chain operations.
 
 ## 🚀 Features
 
 ### Core Functionality
-- **Dashboard**: Overview of payroll operations, statistics, and recent activity
-- **Employee Management**: Add, edit, and manage employees across multiple chains
+- **Split Creation**: Create bill splits with multiple contributors
+- **Cross-Chain Contributions**: Contribute to splits from any supported chain
 - **Payment Processing**: Cross-chain payments using Avail Nexus SDK
-- **Real-time Updates**: Live payment status and transaction tracking
-- **Multi-chain Support**: Ethereum, Arbitrum, Optimism, Base
+- **Real-time Tracking**: Live split progress and contribution status
+- **Multi-chain Support**: Ethereum Sepolia, Arbitrum Sepolia, Optimism Sepolia, Base Sepolia
 
 ### Technical Features
 - **Next.js 15**: Latest App Router with React 19
@@ -52,16 +52,21 @@ yarn install
 npm install
 ```
 
-3. Set up environment variables:
-```bash
-cp .env.example .env.local
-```
-
-4. Configure your environment variables:
+3. Configure your environment variables:
 ```env
-NEXT_PUBLIC_PRIVY_APP_ID=your-privy-app-id
-NEXT_PUBLIC_PAYOS_CONTRACT_ADDRESS=your-contract-address
-NEXT_PUBLIC_AVAILL_NEXUS_API_KEY=your-nexus-api-key
+NEXT_PUBLIC_PRIVY_APP_ID
+OP_SEPOLIA_RPC_URL
+BASE_SEPOLIA_RPC_URL
+POLYGON_AMOY_RPC_URL
+ARB_SEPOLIA_RPC_URL
+ETH_SEPOLIA_RPC_URL
+
+NEXT_PUBLIC_ENABLE_TESTNET=true
+NEXT_PUBLIC_ENABLE_MAINNET=false
+NEXT_PUBLIC_ENABLE_ANALYTICS=false
+NEXT_PUBLIC_ENABLE_DEBUG_LOGS=true
+
+MONGODB_URI
 ```
 
 5. Run the development server:
@@ -73,64 +78,27 @@ npm run dev
 
 6. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## 📁 Project Structure
-
-```
-payos-ui/
-├── app/                    # Next.js App Router
-│   ├── globals.css        # Global styles
-│   ├── layout.tsx         # Root layout
-│   └── page.tsx           # Home page
-├── components/            # React components
-│   ├── layout/           # Layout components
-│   │   └── Navbar.tsx    # Navigation bar
-│   ├── Dashboard.tsx     # Dashboard component
-│   ├── EmployeeManager.tsx # Employee management
-│   ├── PaymentProcessor.tsx # Payment processing
-│   └── PrivyProvider.tsx # Privy authentication provider
-├── public/               # Static assets
-├── package.json         # Dependencies
-└── README.md           # This file
-```
-
-## 🎯 ETHGlobal Prize Integration
-
-### Avail Nexus SDK ($10,000)
-- **Cross-chain Intent Interactions**: Seamless cross-chain payment processing
-- **Bridge & Execute**: Automatic token bridging and smart contract execution
-- **XCS Swaps**: Built-in token conversion capabilities
-
-### PYUSD ($10,000)
-- **Settlement Currency**: PYUSD as the primary settlement token
-- **Multi-chain Support**: PYUSD addresses configured for all supported chains
-- **Smart Contract Integration**: Direct integration with PayOS contracts
-
-### Pyth Network ($5,000)
-- **Price Feeds**: Real-time token price data for conversions
-- **Oracle Integration**: Secure price data for cross-chain operations
-
-### Yellow Network ($5,000)
-- **State Channels**: Architecture ready for off-chain payroll processing
-- **Instant Settlement**: Fast payment processing capabilities
-
 ## 🔧 Usage
 
-### Dashboard
-- View payroll statistics and recent activity
-- Quick access to employee management and payments
-- Chain status and supported networks overview
+### Creating a Split
+1. Connect your wallet using Privy
+2. Navigate to "Create Split" 
+3. Enter recipient address, target chain, token, and amount
+4. Add contributors with custom amounts (up to 10 contributors)
+5. Submit the transaction to create split on-chain
 
-### Employee Management
-- Add new employees with wallet addresses and preferences
-- Configure preferred chains and tokens
-- Set salary amounts and payment schedules
-- Activate/deactivate employees
+### Contributing to a Split
+1. View active splits you're involved in
+2. Select a split to contribute to
+3. Choose token and chain for your contribution
+4. Enter contribution amount
+5. Complete payment - cross-chain bridging handled automatically via Nexus SDK
 
-### Payment Processing
-- Select employees for batch payments
-- Choose payment tokens (ETH, USDC, PYUSD)
-- Process cross-chain payments via Avail Nexus SDK
-- Track payment status and transaction hashes
+### Split Management
+- View all splits (created, contributed, received)
+- Filter by status (active, completed), chain, or ownership
+- Track progress in real-time
+- View transaction details and contributor information
 
 ## 🌐 Supported Chains
 
@@ -143,28 +111,23 @@ payos-ui/
 
 - **ETH**: Ethereum native token
 - **USDC**: USD Coin (Circle)
-- **PYUSD**: PayPal USD (Primary settlement currency)
+- **PYUSD**: PayPal USD
 
 ## 🔒 Security Features
 
 - **Wallet Authentication**: Secure wallet connection via Privy
 - **Transaction Signing**: All transactions require user approval
-- **Smart Contract Integration**: Direct interaction with deployed contracts
-- **Cross-chain Validation**: Secure cross-chain message validation
+- **Smart Contract Integration**: OpenZeppelin audited contracts with reentrancy protection
+- **Access Control**: Owner-only functions for contribution recording
+- **Input Validation**: Comprehensive validation for all split parameters
+- **Safe ERC20 Transfers**: Uses SafeERC20 for secure token operations
 
 ## 🚀 Deployment
 
-### Vercel (Recommended)
+### Vercel
 1. Connect your GitHub repository to Vercel
 2. Set environment variables in Vercel dashboard
 3. Deploy automatically on push to main branch
-
-### Other Platforms
-The app can be deployed to any platform that supports Next.js:
-- Netlify
-- AWS Amplify
-- Railway
-- DigitalOcean App Platform
 
 ## 🔧 Development
 
@@ -180,22 +143,4 @@ The app can be deployed to any platform that supports Next.js:
 - Prettier for code formatting
 - Tailwind CSS for styling
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 📞 Support
-
-For questions and support, please open an issue in the repository or contact the development team.
-
----
-
-**Built with ❤️ for the future of cross-chain payroll management**
+**Built with ❤️ for the future of cross-chain bill splitting**
